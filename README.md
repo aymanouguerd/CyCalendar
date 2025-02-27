@@ -161,14 +161,14 @@ Eh bien, quelle curiosité, t'as scrollé jusqu'ici quand même. Ici on arrive s
 
   Couleur de l'agenda Cours CY
   ```
-   google_calendar -> ligne 102
+   google_calendar.py -> ligne 102
 
         calendar_list_entry['colorId'] = calendar_colors['Cobalt | autre couleur de la liste des calendar colors']
   ```
 
   Couleur des cours (evenements)
   ```
-   google_calendar -> ligne 138
+   google_calendar.py -> ligne 138
 
    if any(term in summary.lower() for term in ['examen', 'rattrapages']):
         return event_colors['Sage'] # Vert
