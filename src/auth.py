@@ -12,23 +12,25 @@ from selenium.webdriver.support import expected_conditions as EC
 from pyvirtualdisplay import Display
 
 def setup_chrome_driver():
-    """Configuration du driver Chrome pour GitHub Actions"""
+    """Configuration du driver Chrome pour GitHub Actions et environnement local"""
     chrome_options = Options()
     
-    # Configuration spécifique pour GitHub Actions
+    # Configuration spécifique pour GitHub Actions et environnement local
     if os.getenv('SELENIUM_HEADLESS'):
         print("Configuration du mode headless...")
-        chrome_options.add_argument('--headless=new')  # nouvelle syntaxe headless
-        chrome_options.add_argument('--no-sandbox')
-        chrome_options.add_argument('--disable-dev-shm-usage')
-        chrome_options.add_argument('--disable-gpu')
-        chrome_options.add_argument('--window-size=1920,1080')
-        chrome_options.page_load_strategy = 'eager'
-        chrome_options.add_argument('--disable-extensions')
-        chrome_options.add_argument('--disable-infobars')
-        chrome_options.add_argument('--disable-notifications')
-        chrome_options.add_argument('--allow-running-insecure-content')
-        chrome_options.add_argument('--ignore-certificate-errors')
+        chrome_options.add_argument('--headless=new')
+        chrome_options.binary_location = "/usr/bin/chromium-browser"  # Chemin vers Chromium
+    
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--window-size=1920,1080')
+    chrome_options.page_load_strategy = 'eager'
+    chrome_options.add_argument('--disable-extensions')
+    chrome_options.add_argument('--disable-infobars')
+    chrome_options.add_argument('--disable-notifications')
+    chrome_options.add_argument('--allow-running-insecure-content')
+    chrome_options.add_argument('--ignore-certificate-errors')
         
     # Ajout des options depuis CHROME_OPTS
     chrome_opts = os.getenv('CHROME_OPTS', '').split()
@@ -36,9 +38,11 @@ def setup_chrome_driver():
         chrome_options.add_argument(opt)
         
     print("Options Chrome configurées:", chrome_options.arguments)
+    print("Binaire Chrome:", chrome_options.binary_location)
     
     try:
-        driver = webdriver.Chrome(options=chrome_options)
+        service = Service("/usr/bin/chromedriver")  # Chemin explicite vers chromedriver
+        driver = webdriver.Chrome(service=service, options=chrome_options)
         driver.set_page_load_timeout(30)
         print("Driver Chrome initialisé avec succès")
         return driver
