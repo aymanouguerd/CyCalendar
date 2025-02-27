@@ -35,14 +35,16 @@ jobs:
           mkdir -p google
           echo '${{ secrets.GOOGLE_CREDENTIALS }}' > google/client_secret.json
 
-      - name: Run script
+      - name: Run script with debug
         env:
           CY_USERNAME: ${{ secrets.CY_USERNAME }}
           CY_PASSWORD: ${{ secrets.CY_PASSWORD }}
           DISPLAY: :99
+          PYTHONUNBUFFERED: 1
+          SELENIUM_HEADLESS: 1
         run: |
           Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
-          python cyCalendar.py
+          python -u cyCalendar.py 2>&1 | tee debug.log
 
       - name: Upload logs if failure
         if: failure()
