@@ -10,6 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from getpass import getpass
+from pyvirtualdisplay import Display
 
 def get_auth_info():
     """
@@ -17,30 +18,34 @@ def get_auth_info():
     Returns:
         tuple: (cookies, student_number) ou (None, None) en cas d'erreur
     """
-    # Configuration de Chrome
-    chrome_options = Options()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    
     try:
-        # Initialisation du driver
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+        # Initialisation de l'affichage virtuel
+        display = Display(visible=0, size=(1920, 1080))
+        display.start()
+
+        # Configuration de Chrome pour GitHub Actions
+        chrome_options = Options()
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--window-size=1920,1080')
+        
+        # Initialisation du driver avec le chromedriver système
+        service = Service('/usr/bin/chromedriver')
+        driver = webdriver.Chrome(service=service, options=chrome_options)
         
         # Accéder à la page de connexion
         print("Accès à la page de connexion...")
         driver.get('https://services-web.cyu.fr/calendar/LdapLogin')
         
-        # Possibilité de renseigner les identifiants ici
+        # Chargement des variables d'environnement
         load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
-        username = os.getenv('CY_USERNAME', '')
-        password = os.getenv('CY_PASSWORD', '')
+        username = os.getenv('CY_USERNAME')
+        password = os.getenv('CY_PASSWORD')
         
-        # Sinon demander à l'utilisateur
-        if username == "" or password == "":
-            print("Veuillez entrer vos identifiants pour vous connecter")
-            username = input("Entrez votre nom d'utilisateur: ")
-            password = getpass("Entrez votre mot de passe: ")
+        if not username or not password:
+            raise ValueError("Les identifiants CY_USERNAME et CY_PASSWORD doivent être définis dans les variables d'environnement")
         
         # Remplir le formulaire
         username_field = WebDriverWait(driver, 10).until(
@@ -85,10 +90,17 @@ def get_auth_info():
             
     except Exception as e:
         print(f"Erreur lors de l'authentification: {str(e)}")
-        return None, None
+        if 'driver' in locals():
+            driver.quit()
+        if 'display' in locals():
+            display.stop()
+        raise
         
     finally:
-        driver.quit()
+        if 'driver' in locals():
+            driver.quit()
+        if 'display' in locals():
+            display.stop()
 
 if __name__ == "__main__":
     cookie, student_id = get_auth_info()
