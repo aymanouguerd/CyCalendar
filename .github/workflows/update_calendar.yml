@@ -18,6 +18,12 @@ jobs:
         with:
           python-version: ${{ secrets.PYTHON_VERSION }}
 
+      - name: Install Chrome and ChromeDriver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver
+          sudo apt-get install -y xvfb
+
       - name: Create .env file at the root
         run: echo '${{ secrets.ENV }}' > .env
 
@@ -32,4 +38,7 @@ jobs:
       - name: Run script
         env:
           ENV: ${{ secrets.ENV }}
-        run: python cyCalendar.py
+          DISPLAY: :99
+        run: |
+          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+          python cyCalendar.py
