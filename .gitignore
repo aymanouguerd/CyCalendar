@@ -1,19 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
 .env
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.json
-*.pickle
-*.ics
 
-# Google Auth files
-google/client_secret*.json
+# Google Authentication
+google/*.json
 google/token.pickle
-
-# Python cache
-__pycache__/
-*.pyc
 
 # Generated files
 generated/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific
+.DS_Store
+Thumbs.db
