@@ -9,6 +9,7 @@ import os.path
 import pickle
 import glob
 import html
+import base64
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 CALENDAR_NAME = "Cours CY"
@@ -69,6 +70,22 @@ def get_google_credentials():
         # Sauvegarder les credentials
         with open(TOKEN_PATH, 'wb') as token:
             pickle.dump(creds, token)
+            
+        # Convertir automatiquement en base64
+        try:
+            with open(TOKEN_PATH, 'rb') as token_file:
+                token_bytes = token_file.read()
+                token_b64 = base64.b64encode(token_bytes).decode('utf-8')
+                base64_path = TOKEN_PATH + '.base64'
+                
+            with open(base64_path, 'w') as output_file:
+                output_file.write(token_b64)
+                
+            print("\nToken converti en base64 et sauvegardé dans:", base64_path)
+            print("\nContenu à copier dans le secret GOOGLE_TOKEN_PICKLE:")
+            print(token_b64)
+        except Exception as e:
+            print(f"Attention: Erreur lors de la conversion en base64: {e}")
     
     return creds
 
@@ -82,7 +99,7 @@ def find_or_create_calendar(service):
         
         # Chercher et supprimer le calendrier 'Cours CY' s'il existe
         for calendar_list_entry in calendar_list['items']:
-            if calendar_list_entry['summary'] == CALENDAR_NAME:
+            if (calendar_list_entry['summary'] == CALENDAR_NAME):
                 print(f"Suppression de l'ancien agenda '{CALENDAR_NAME}'...")
                 service.calendars().delete(calendarId=calendar_list_entry['id']).execute()
                 break
