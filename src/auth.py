@@ -2,12 +2,14 @@ import os
 import requests
 import re
 from dotenv import load_dotenv
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from pyvirtualdisplay import Display
 
 def setup_chrome_driver():
     """Configuration du driver Chrome pour GitHub Actions et environnement local"""
@@ -55,8 +57,13 @@ def get_auth_info():
         tuple: (cookies, student_number) ou (None, None) en cas d'erreur
     """
     driver = None
+    display = None
     
     try:
+        # Initialisation de l'affichage virtuel
+        display = Display(visible=0, size=(1920, 1080))
+        display.start()
+
         # Chargement des variables d'environnement
         load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
         username = os.getenv('CY_USERNAME')
@@ -130,6 +137,11 @@ def get_auth_info():
         if driver:
             try:
                 driver.quit()
+            except Exception:
+                pass
+        if display:
+            try:
+                display.stop()
             except Exception:
                 pass
 
