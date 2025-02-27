@@ -44,7 +44,7 @@ jobs:
           SELENIUM_HEADLESS: 1
         run: |
           Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
-          python -u cyCalendar.py 2>&1 | tee debug.log
+          python3 -u cyCalendar.py 2>&1 | tee debug.log
 
       - name: Upload logs if failure
         if: failure()
