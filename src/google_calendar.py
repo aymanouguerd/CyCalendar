@@ -71,22 +71,6 @@ def get_google_credentials():
         with open(TOKEN_PATH, 'wb') as token:
             pickle.dump(creds, token)
             
-        # Convertir automatiquement en base64
-        try:
-            with open(TOKEN_PATH, 'rb') as token_file:
-                token_bytes = token_file.read()
-                token_b64 = base64.b64encode(token_bytes).decode('utf-8')
-                base64_path = TOKEN_PATH + '.base64'
-                
-            with open(base64_path, 'w') as output_file:
-                output_file.write(token_b64)
-                
-            print("\nToken converti en base64 et sauvegardé dans:", base64_path)
-            print("\nContenu à copier dans le secret GOOGLE_TOKEN_PICKLE:")
-            print(token_b64)
-        except Exception as e:
-            print(f"Attention: Erreur lors de la conversion en base64: {e}")
-    
     return creds
 
 def find_or_create_calendar(service):
@@ -114,6 +98,7 @@ def find_or_create_calendar(service):
         
         # Colorer le calendrier
         calendar_list_entry = service.calendarList().get(calendarId=created_calendar['id']).execute()
+        # Couleur de l'agenda
         calendar_list_entry['colorId'] = calendar_colors['Cobalt'] # Bleu
         service.calendarList().update(calendarId=created_calendar['id'], body=calendar_list_entry).execute()
         
@@ -149,6 +134,7 @@ def get_event_color(summary):
     Détermine la couleur de l'événement selon son type (CM/TD/TP/Examen)
     """
     summary = summary.upper()
+    # Couleurs des événements
     if any(term in summary.lower() for term in ['examen', 'rattrapages']):
         return event_colors['Sage'] # Vert
     elif 'CM' in summary:
@@ -157,7 +143,7 @@ def get_event_color(summary):
         return event_colors['Tomato'] # Rouge
     elif 'TP' in summary:
         return event_colors['Tangerine'] # Orange
-    return 'Graphite'  # Couleur par défaut
+    return event_colors['Graphite']  # Couleur par défaut
 
 def import_to_google_calendar(ics_file_path, calendar_id=None):
     """
