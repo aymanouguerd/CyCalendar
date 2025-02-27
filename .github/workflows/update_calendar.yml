@@ -1,0 +1,35 @@
+name: Update Google Calendar
+
+on:
+  schedule:
+    - cron: "0 4,18 * * *"  # Runs at 04:00 and 18:00 UTC every day
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  update-calendar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ secrets.PYTHON_VERSION }}
+
+      - name: Create .env file at the root
+        run: echo '${{ secrets.ENV }}' > .env
+
+      - name: Install dependencies
+        run: pip install --upgrade google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client schedule
+
+      - name: Create Google credentials file
+        run: |
+          mkdir -p google
+          echo '${{ secrets.GOOGLE_CREDENTIALS }}' > google/client_secret.json
+
+      - name: Run script
+        env:
+          ENV: ${{ secrets.ENV }}
+        run: python cyCalendar.py
