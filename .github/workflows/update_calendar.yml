@@ -32,7 +32,6 @@ jobs:
 
       - name: Create configuration files
         run: |
-          echo '${{ secrets.ENV }}' > .env
           mkdir -p google
           echo '${{ secrets.GOOGLE_CREDENTIALS }}' > google/client_secret.json
 
