@@ -23,7 +23,16 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium-browser chromium-chromedriver xvfb
-          sudo chmod +x /usr/bin/chromedriver  # Assure les permissions d'exécution
+          sudo chmod +x /usr/bin/chromedriver
+          which chromedriver
+          chromium-browser --version
+          chromedriver --version
+
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
+          sleep 3  # Attente pour s'assurer que Xvfb est bien démarré
+          xdpyinfo -display :99 || echo "Échec de la vérification Xvfb"
 
       - name: Install Python dependencies
         run: |
@@ -42,8 +51,8 @@ jobs:
           DISPLAY: :99
           PYTHONUNBUFFERED: 1
           SELENIUM_HEADLESS: 1
+          CHROME_OPTS: "--no-sandbox --disable-dev-shm-usage --disable-gpu"
         run: |
-          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
           python3 -u cyCalendar.py 2>&1 | tee debug.log
 
       - name: Upload logs if failure
