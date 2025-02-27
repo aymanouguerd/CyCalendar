@@ -128,7 +128,7 @@ CyCalendar est un outil qui synchronise automatiquement ou manuellement votre em
    Il en reste une mais pour ça il va falloir executer le petit script situé dans src/ en executant la commande : ``` python3 src/token_converter.py ```
    Vous n'avez plus qu'à copier coller le resultat de votre terminal à une dernière variable qu'il faudra nommer 
 
-   - GOOGLE_TOKEN_PICKLE avec la valeur précemment convertie
+   - GOOGLE_TOKEN_PICKLE avec la valeur précédemment convertie
     
    TADAAA. C'est fini. Si vous voulez faire un test manuel vous pouvez retourner sur actions, update google calendar à gauche et cliquer sur run workflow.
 
