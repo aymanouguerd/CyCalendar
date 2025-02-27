@@ -109,7 +109,7 @@ CyCalendar est un outil qui synchronise automatiquement ou manuellement votre em
 
    ![1740679340439](image/README/1740679340439.png)
 
-   Puis cliquez sur enable worklfow.
+   Puis cliquez sur enable workflow.
 
    Une fois tout ça fait il va falloir aller créer les variables secrètes d'environnement. Cliquez sur les paramètres de votre nouveau repo puis allez sur Secrets and variable et Actions.
 
