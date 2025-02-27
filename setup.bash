@@ -29,8 +29,5 @@ pip3 install -r requirements.txt
 echo "Configuration des permissions..."
 sudo chmod +x /usr/bin/chromedriver
 
-echo "Installation terminée !"
 echo ""
-echo "N'oubliez pas de :"
-echo "1. Créer un fichier .env avec vos identifiants CY"
-echo "2. Placer votre fichier client_secret.json dans le dossier google/"
+echo "Installation terminée !"
