@@ -32,7 +32,6 @@ jobs:
         run: |
           Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
           sleep 3  # Attente pour s'assurer que Xvfb est bien démarré
-          xdpyinfo -display :99 || echo "Échec de la vérification Xvfb"
 
       - name: Install Python dependencies
         run: |
