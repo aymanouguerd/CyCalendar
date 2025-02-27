@@ -14,7 +14,7 @@ CyCalendar est un outil qui synchronise automatiquement ou manuellement votre em
 
    Ce script peut être utilisé de 3 façons: Génération simple du .ics et import manuel par vos soins ou bien import automatique via l'api de google avec possibilité d'ajout des mises à jour automatiques via github actions.
 
-   Des erreurs sont susceptibles d'arriver et pourtant de ne pas géner l'execution du programme. Vérifiez par vous même le fonctionnement ou non tu programme.
+   Des erreurs sont susceptibles d'arriver et pourtant de ne pas gêner l'execution du programme. Vérifiez par vous même le fonctionnement ou non tu programme.
 
 ### Utilisation manuelle
    Cette utilisation est de loin la plus simple. Voici ses étapes :
