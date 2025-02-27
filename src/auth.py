@@ -14,15 +14,33 @@ from pyvirtualdisplay import Display
 def setup_chrome_driver():
     """Configuration du driver Chrome pour GitHub Actions"""
     chrome_options = Options()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('--window-size=1920,1080')
+    
+    # Configuration spécifique pour GitHub Actions
+    if os.getenv('SELENIUM_HEADLESS'):
+        print("Configuration du mode headless...")
+        chrome_options.add_argument('--headless=new')  # nouvelle syntaxe headless
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--window-size=1920,1080')
+        chrome_options.page_load_strategy = 'eager'
+        chrome_options.add_argument('--disable-extensions')
+        chrome_options.add_argument('--disable-infobars')
+        chrome_options.add_argument('--disable-notifications')
+        chrome_options.add_argument('--allow-running-insecure-content')
+        chrome_options.add_argument('--ignore-certificate-errors')
+        
+    # Ajout des options depuis CHROME_OPTS
+    chrome_opts = os.getenv('CHROME_OPTS', '').split()
+    for opt in chrome_opts:
+        chrome_options.add_argument(opt)
+        
+    print("Options Chrome configurées:", chrome_options.arguments)
     
     try:
-        service = Service(executable_path='/usr/bin/chromedriver')
-        driver = webdriver.Chrome(service=service, options=chrome_options)
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.set_page_load_timeout(30)
+        print("Driver Chrome initialisé avec succès")
         return driver
     except Exception as e:
         print(f"Erreur lors de l'initialisation du driver Chrome: {str(e)}")
@@ -42,11 +60,6 @@ def get_auth_info():
         display = Display(visible=0, size=(1920, 1080))
         display.start()
 
-        # Initialisation du driver Chrome
-        driver = setup_chrome_driver()
-        if not driver:
-            raise Exception("Impossible d'initialiser le driver Chrome")
-
         # Chargement des variables d'environnement
         load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
         username = os.getenv('CY_USERNAME')
@@ -55,27 +68,41 @@ def get_auth_info():
         if not username or not password:
             raise ValueError("Les identifiants CY_USERNAME et CY_PASSWORD doivent être définis")
 
-        # Accès à la page de connexion
-        print("Accès à la page de connexion...")
-        driver.get('https://services-web.cyu.fr/calendar/LdapLogin')
-        
-        # Remplir le formulaire
-        username_field = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "Name"))
-        )
-        password_field = driver.find_element(By.ID, "Password")
-        
-        username_field.send_keys(username)
-        password_field.send_keys(password)
-        
-        # Soumettre le formulaire
-        password_field.submit()
-        
-        # Attendre la redirection
-        WebDriverWait(driver, 10).until(
-            EC.url_contains('/calendar')
-        )
-        
+        # Initialisation du driver Chrome
+        driver = setup_chrome_driver()
+        if not driver:
+            raise Exception("Impossible d'initialiser le driver Chrome")
+
+        # Accès à la page de connexion avec retry
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                print(f"Tentative de connexion {attempt + 1}/{max_retries}...")
+                driver.get('https://services-web.cyu.fr/calendar/LdapLogin')
+                
+                # Attendre et remplir le formulaire
+                username_field = WebDriverWait(driver, 20).until(
+                    EC.presence_of_element_located((By.ID, "Name"))
+                )
+                password_field = driver.find_element(By.ID, "Password")
+                
+                username_field.send_keys(username)
+                password_field.send_keys(password)
+                
+                # Soumettre le formulaire
+                password_field.submit()
+                
+                # Attendre la redirection avec un timeout plus long
+                WebDriverWait(driver, 20).until(
+                    EC.url_contains('/calendar')
+                )
+                break
+            except Exception as e:
+                print(f"Tentative {attempt + 1} échouée: {str(e)}")
+                if attempt == max_retries - 1:
+                    raise
+                continue
+
         # Extraire le student number
         current_url = driver.current_url
         print("Extraction du numéro étudiant...")
@@ -97,7 +124,9 @@ def get_auth_info():
         return calendar_cookie, student_number
             
     except Exception as e:
-        print(f"Erreur lors de l'authentification: {str(e)}")
+        print(f"Erreur détaillée lors de l'authentification: {str(e)}")
+        if driver:
+            print("Page source:", driver.page_source)
         return None, None
         
     finally:
