@@ -242,6 +242,5 @@ def import_to_google_calendar(ics_file_path, calendar_id=None):
     except Exception as e:
         print(f"Erreur lors de l'import: {str(e)}")
         print("\nSi vous voyez une erreur d'accès refusé:")
-        print("1. Assurez-vous que votre compte est ajouté comme testeur dans la console Google Cloud")
-        print("2. Supprimez le fichier token.pickle s'il existe")
-        print("3. Relancez le programme pour une nouvelle authentification")
+        print("Votre limite doit etre dépassée. Attendez quelques minutes et réessayez.")
+        print("Si le problème persiste, contactez le développeur.")

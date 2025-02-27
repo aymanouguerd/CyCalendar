@@ -22,16 +22,11 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y chromium-browser chromium-chromedriver xvfb
+          sudo apt-get install -y chromium-browser chromium-chromedriver
           sudo chmod +x /usr/bin/chromedriver
           which chromedriver
           chromium-browser --version
           chromedriver --version
-
-      - name: Start Xvfb
-        run: |
-          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
-          sleep 3  # Attente pour s'assurer que Xvfb est bien démarré
 
       - name: Install Python dependencies
         run: |
