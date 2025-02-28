@@ -1,6 +1,8 @@
 import os
 import re
 import time
+import base64
+from datetime import datetime
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -49,6 +51,46 @@ def setup_chrome_driver():
         print(f"Erreur lors de l'initialisation du driver Chrome: {str(e)}")
         return None
 
+def save_screenshot(driver, name):
+    """Sauvegarde une capture d'écran pour le débogage"""
+    try:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"debug_{name}_{timestamp}.png"
+        driver.save_screenshot(filename)
+        print(f"Capture d'écran sauvegardée: {filename}")
+        
+        # Si on est en mode GitHub Actions, afficher la capture en base64
+        if os.getenv('GITHUB_ACTIONS'):
+            with open(filename, "rb") as img_file:
+                b64_string = base64.b64encode(img_file.read()).decode('utf-8')
+                print(f"\nCapture d'écran {name} (base64, premiers 500 caractères):")
+                print(b64_string[:500])
+    except Exception as e:
+        print(f"Erreur lors de la sauvegarde de la capture d'écran: {e}")
+
+def check_login_success(driver):
+    """Vérifie si la connexion a réussi en vérifiant différents éléments sur la page"""
+    try:
+        # Vérifier si l'URL contient '/calendar'
+        if '/calendar' not in driver.current_url:
+            print("L'URL ne contient pas '/calendar'")
+            return False
+            
+        # Vérifier si l'URL contient des paramètres comme 'fid0='
+        if 'fid0=' not in driver.current_url:
+            print("L'URL ne contient pas 'fid0='")
+            return False
+            
+        # Vérifier si le titre de la page est correct
+        if 'Calendrier' not in driver.title and 'Calendar' not in driver.title:
+            print(f"Le titre de la page ne correspond pas: '{driver.title}'")
+            return False
+            
+        return True
+    except Exception as e:
+        print(f"Erreur lors de la vérification du succès de connexion: {e}")
+        return False
+
 def get_auth_info():
     """
     Se connecte au portail CY et récupère les cookies et informations nécessaires
@@ -87,29 +129,81 @@ def get_auth_info():
             for login_attempt in range(3):
                 try:
                     print(f"Tentative de connexion {login_attempt + 1}/3...")
-                    driver.get('https://services-web.cyu.fr/calendar/LdapLogin')
                     
-                    # Attendre et remplir le formulaire
-                    username_field = WebDriverWait(driver, 20).until(
-                        EC.presence_of_element_located((By.ID, "Name"))
-                    )
+                    # D'abord, accéder à la page d'accueil du service
+                    driver.get('https://services-web.cyu.fr/calendar/')
+                    time.sleep(2)
+                    save_screenshot(driver, "homepage")
+                    
+                    # Vérifier si nous sommes déjà connectés
+                    if check_login_success(driver):
+                        print("Déjà connecté, pas besoin d'authentification!")
+                        connection_success = True
+                        break
+                    
+                    # Sinon, aller à la page de connexion
+                    print("Accès à la page de connexion...")
+                    driver.get('https://services-web.cyu.fr/calendar/LdapLogin')
+                    time.sleep(2)
+                    save_screenshot(driver, "login_page")
+                    
+                    # Attendre et vérifier que la page de login est bien chargée
+                    try:
+                        WebDriverWait(driver, 10).until(
+                            EC.presence_of_element_located((By.ID, "Name"))
+                        )
+                    except:
+                        print("Impossible de trouver le champ 'Name' sur la page de login")
+                        print(f"URL actuelle: {driver.current_url}")
+                        print(f"Titre: {driver.title}")
+                        save_screenshot(driver, "login_page_error")
+                        raise Exception("Page de login non chargée correctement")
+                    
+                    # Remplir le formulaire
+                    username_field = driver.find_element(By.ID, "Name")
                     password_field = driver.find_element(By.ID, "Password")
+                    
+                    username_field.clear()  # S'assurer que le champ est vide
+                    password_field.clear()
                     
                     username_field.send_keys(username)
                     password_field.send_keys(password)
                     
+                    save_screenshot(driver, "form_filled")
+                    
                     # Soumettre le formulaire
+                    print("Soumission du formulaire...")
                     password_field.submit()
                     
-                    # Attendre la redirection avec un timeout
-                    WebDriverWait(driver, 20).until(
-                        EC.url_contains('/calendar')
-                    )
-                    connection_success = True
-                    break
+                    # Attendre un peu pour permettre la redirection
+                    time.sleep(5)
+                    save_screenshot(driver, "after_submit")
+                    
+                    # Attendre la redirection vers la page du calendrier
+                    try:
+                        WebDriverWait(driver, 20).until(
+                            EC.url_contains('/calendar')
+                        )
+                        print(f"URL après redirection: {driver.current_url}")
+                    except Exception as e:
+                        print(f"Erreur lors de l'attente de redirection: {e}")
+                        save_screenshot(driver, "redirect_error")
+                        raise
+                    
+                    # Vérifier explicitement si la connexion a réussi
+                    if check_login_success(driver):
+                        print("Connexion réussie !")
+                        connection_success = True
+                        break
+                    else:
+                        print("La connexion semble avoir échoué malgré la redirection.")
+                        save_screenshot(driver, "login_failed")
+                        raise Exception("Échec de connexion après redirection")
                     
                 except Exception as e:
                     print(f"ERREUR: Tentative de connexion {login_attempt + 1} échouée: {str(e)}")
+                    save_screenshot(driver, f"error_attempt_{login_attempt+1}")
+                    
                     if login_attempt < 2:
                         print("Nouvelle tentative de connexion dans 5 secondes...")
                         time.sleep(5)
@@ -124,10 +218,12 @@ def get_auth_info():
                 else:
                     print("Toutes les tentatives globales ont échoué.")
                     return None, None
-                    
+            
             # 2. Extraction du numéro étudiant
             current_url = driver.current_url
             print("URL après connexion:", current_url)
+            save_screenshot(driver, "after_login_success")
+            
             print("Extraction du numéro étudiant...")
             student_match = re.search(r'fid0=(\d+)', current_url)
             
@@ -135,23 +231,47 @@ def get_auth_info():
                 print("ERREUR: Impossible de trouver le numéro étudiant dans l'URL")
                 print(f"URL actuelle: {current_url}")
                 print(f"Titre de la page: {driver.title}")
-                print("Contenu HTML de la page (premiers 500 caractères):")
-                print(driver.page_source[:500])
                 
-                if global_attempt < global_max_attempts - 1:
-                    print("Échec de l'extraction du numéro étudiant, nouvelle tentative globale dans 10 secondes...")
-                    time.sleep(10)
-                    continue
-                else:
-                    print("Toutes les tentatives globales ont échoué.")
-                    return None, None
+                # Essayer une URL alternative ou rechercher ailleurs
+                print("Tentative d'accès à la page de l'agenda...")
+                try:
+                    driver.get('https://services-web.cyu.fr/calendar/Home/ReadCalendar/')
+                    time.sleep(3)
+                    save_screenshot(driver, "calendar_page")
                     
+                    # Vérifier la nouvelle URL
+                    current_url = driver.current_url
+                    print("Nouvelle URL:", current_url)
+                    student_match = re.search(r'fid0=(\d+)', current_url)
+                    
+                    if not student_match:
+                        print("Toujours pas de numéro étudiant trouvé.")
+                        print("Contenu HTML de la page (premiers 1000 caractères):")
+                        print(driver.page_source[:1000])
+                        
+                        if global_attempt < global_max_attempts - 1:
+                            print("Échec de l'extraction du numéro étudiant, nouvelle tentative globale dans 10 secondes...")
+                            time.sleep(10)
+                            continue
+                        else:
+                            print("Toutes les tentatives globales ont échoué.")
+                            return None, None
+                except Exception as e:
+                    print(f"Erreur lors de l'accès à la page de l'agenda: {e}")
+                    if global_attempt < global_max_attempts - 1:
+                        continue
+                    else:
+                        return None, None
+            
             student_number = student_match.group(1)
             print(f"Numéro étudiant trouvé: {student_number}")
             
             # 3. Récupération des cookies
             print("Récupération des cookies...")
             cookies = driver.get_cookies()
+            print(f"Cookies trouvés: {len(cookies)}")
+            print("Noms des cookies:", [c['name'] for c in cookies])
+            
             calendar_cookie = next(
                 (cookie for cookie in cookies if cookie['name'] == '.Calendar.Cookies'),
                 None
@@ -159,17 +279,34 @@ def get_auth_info():
             
             if not calendar_cookie:
                 print("ERREUR: Cookie .Calendar.Cookies non trouvé")
-                print("Cookies disponibles:", [c['name'] for c in cookies])
                 
-                if global_attempt < global_max_attempts - 1:
-                    print("Échec de récupération du cookie, nouvelle tentative globale dans 10 secondes...")
-                    time.sleep(10)
-                    continue
-                else:
-                    print("Toutes les tentatives globales ont échoué.")
-                    return None, None
+                # Essayer de rafraîchir la page pour avoir tous les cookies
+                print("Tentative de rafraîchissement de la page...")
+                driver.refresh()
+                time.sleep(5)
+                save_screenshot(driver, "page_refresh")
+                
+                cookies = driver.get_cookies()
+                print(f"Cookies après rafraîchissement: {len(cookies)}")
+                print("Noms des cookies après rafraîchissement:", [c['name'] for c in cookies])
+                
+                calendar_cookie = next(
+                    (cookie for cookie in cookies if cookie['name'] == '.Calendar.Cookies'),
+                    None
+                )
+                
+                if not calendar_cookie:
+                    print("Cookie toujours introuvable après rafraîchissement")
+                    if global_attempt < global_max_attempts - 1:
+                        print("Échec de récupération du cookie, nouvelle tentative globale dans 10 secondes...")
+                        time.sleep(10)
+                        continue
+                    else:
+                        print("Toutes les tentatives globales ont échoué.")
+                        return None, None
             
             # Si on arrive ici, tout a réussi
+            print("Authentification complète réussie !")
             return calendar_cookie, student_number
             
     except Exception as e:
@@ -178,8 +315,7 @@ def get_auth_info():
             try:
                 print("URL actuelle:", driver.current_url)
                 print("Titre de la page:", driver.title)
-                print("Contenu HTML de la page (premiers 500 caractères):")
-                print(driver.page_source[:500])
+                save_screenshot(driver, "critical_error")
             except:
                 print("Impossible d'accéder aux informations de la page")
         return None, None
