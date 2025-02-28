@@ -103,13 +103,19 @@ def get_auth_info():
         # Processus global avec maximum de tentatives
         global_max_attempts = 3
         for global_attempt in range(global_max_attempts):
-            print(f"=== Tentative globale {global_attempt + 1}/{global_max_attempts} ===")
+            print("\n" + "=" * 60)
+            print(f"===== TENTATIVE GLOBALE {global_attempt + 1}/{global_max_attempts} =====")
+            print("=" * 60)
             
             # 1. Connexion
+            print("\n" + "-" * 40)
+            print("ÉTAPE 1: CONNEXION AU PORTAIL CY")
+            print("-" * 40)
             connection_success = False
             for login_attempt in range(3):
                 try:
-                    print(f"Tentative de connexion {login_attempt + 1}/3...")
+                    print(f"\nTentative de connexion {login_attempt + 1}/3...")
+                    print("·" * 30)
                     
                     # D'abord, accéder à la page d'accueil du service
                     driver.get('https://services-web.cyu.fr/calendar/')
@@ -166,15 +172,15 @@ def get_auth_info():
                     
                     # Vérifier explicitement si la connexion a réussi
                     if check_login_success(driver):
-                        print("Connexion réussie !")
+                        print("\n✓ Connexion réussie !")
                         connection_success = True
                         break
                     else:
-                        print("La connexion semble avoir échoué malgré la redirection.")
+                        print("\n✗ La connexion semble avoir échoué malgré la redirection.")
                         raise Exception("Échec de connexion après redirection")
                     
                 except Exception as e:
-                    print(f"ERREUR: Tentative de connexion {login_attempt + 1} échouée: {str(e)}")
+                    print(f"\n✗ ERREUR: Tentative de connexion {login_attempt + 1} échouée: {str(e)}")
                     
                     if login_attempt < 2:
                         print("Nouvelle tentative de connexion dans 5 secondes...")
@@ -184,14 +190,17 @@ def get_auth_info():
             
             if not connection_success:
                 if global_attempt < global_max_attempts - 1:
-                    print("Échec de connexion, nouvelle tentative globale dans 10 secondes...")
+                    print("\n✗ Échec de connexion, nouvelle tentative globale dans 10 secondes...")
                     time.sleep(10)
                     continue
                 else:
-                    print("Toutes les tentatives globales ont échoué.")
+                    print("\n✗ Toutes les tentatives globales ont échoué.")
                     return None, None
             
             # 2. Extraction du numéro étudiant
+            print("\n" + "-" * 40)
+            print("ÉTAPE 2: EXTRACTION DU NUMÉRO ÉTUDIANT")
+            print("-" * 40)
             current_url = driver.current_url
             print("URL après connexion:", current_url)
             
@@ -199,12 +208,12 @@ def get_auth_info():
             student_match = re.search(r'fid0=(\d+)', current_url)
             
             if not student_match:
-                print("ERREUR: Impossible de trouver le numéro étudiant dans l'URL")
+                print("✗ ERREUR: Impossible de trouver le numéro étudiant dans l'URL")
                 print(f"URL actuelle: {current_url}")
                 print(f"Titre de la page: {driver.title}")
                 
                 # Essayer une URL alternative ou rechercher ailleurs
-                print("Tentative d'accès à la page de l'agenda...")
+                print("\nTentative d'accès à la page de l'agenda...")
                 try:
                     driver.get('https://services-web.cyu.fr/calendar/Home/ReadCalendar/')
                     time.sleep(3)
@@ -215,28 +224,31 @@ def get_auth_info():
                     student_match = re.search(r'fid0=(\d+)', current_url)
                     
                     if not student_match:
-                        print("Toujours pas de numéro étudiant trouvé.")
+                        print("✗ Toujours pas de numéro étudiant trouvé.")
                         print("Contenu HTML de la page (premiers 1000 caractères):")
                         print(driver.page_source[:1000])
                         
                         if global_attempt < global_max_attempts - 1:
-                            print("Échec de l'extraction du numéro étudiant, nouvelle tentative globale dans 10 secondes...")
+                            print("\n✗ Échec de l'extraction du numéro étudiant, nouvelle tentative globale dans 10 secondes...")
                             time.sleep(10)
                             continue
                         else:
-                            print("Toutes les tentatives globales ont échoué.")
+                            print("\n✗ Toutes les tentatives globales ont échoué.")
                             return None, None
                 except Exception as e:
-                    print(f"Erreur lors de l'accès à la page de l'agenda: {e}")
+                    print(f"\n✗ Erreur lors de l'accès à la page de l'agenda: {e}")
                     if global_attempt < global_max_attempts - 1:
                         continue
                     else:
                         return None, None
             
             student_number = student_match.group(1)
-            print(f"Numéro étudiant trouvé: {student_number}")
+            print(f"✓ Numéro étudiant trouvé: {student_number}")
             
             # 3. Récupération des cookies
+            print("\n" + "-" * 40)
+            print("ÉTAPE 3: RÉCUPÉRATION DES COOKIES")
+            print("-" * 40)
             print("Récupération des cookies...")
             cookies = driver.get_cookies()
             print(f"Cookies trouvés: {len(cookies)}")
@@ -248,7 +260,7 @@ def get_auth_info():
             )
             
             if not calendar_cookie:
-                print("ERREUR: Cookie .Calendar.Cookies non trouvé")
+                print("✗ ERREUR: Cookie .Calendar.Cookies non trouvé")
                 
                 # Essayer de rafraîchir la page pour avoir tous les cookies
                 print("Tentative de rafraîchissement de la page...")
@@ -265,21 +277,25 @@ def get_auth_info():
                 )
                 
                 if not calendar_cookie:
-                    print("Cookie toujours introuvable après rafraîchissement")
+                    print("✗ Cookie toujours introuvable après rafraîchissement")
                     if global_attempt < global_max_attempts - 1:
-                        print("Échec de récupération du cookie, nouvelle tentative globale dans 10 secondes...")
+                        print("\n✗ Échec de récupération du cookie, nouvelle tentative globale dans 10 secondes...")
                         time.sleep(10)
                         continue
                     else:
-                        print("Toutes les tentatives globales ont échoué.")
+                        print("\n✗ Toutes les tentatives globales ont échoué.")
                         return None, None
             
             # Si on arrive ici, tout a réussi
-            print("Authentification complète réussie !")
+            print("\n" + "=" * 60)
+            print("✓✓✓ AUTHENTIFICATION COMPLÈTE RÉUSSIE ! ✓✓✓")
+            print("=" * 60)
             return calendar_cookie, student_number
             
     except Exception as e:
-        print(f"ERREUR CRITIQUE: {str(e)}")
+        print("\n" + "!" * 60)
+        print(f"✗✗✗ ERREUR CRITIQUE: {str(e)}")
+        print("!" * 60)
         if driver:
             try:
                 print("URL actuelle:", driver.current_url)
