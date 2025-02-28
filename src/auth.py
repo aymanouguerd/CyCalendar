@@ -1,8 +1,6 @@
 import os
 import re
 import time
-import base64
-from datetime import datetime
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -50,23 +48,6 @@ def setup_chrome_driver():
     except Exception as e:
         print(f"Erreur lors de l'initialisation du driver Chrome: {str(e)}")
         return None
-
-def save_screenshot(driver, name):
-    """Sauvegarde une capture d'écran pour le débogage"""
-    try:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"debug_{name}_{timestamp}.png"
-        driver.save_screenshot(filename)
-        print(f"Capture d'écran sauvegardée: {filename}")
-        
-        # Si on est en mode GitHub Actions, afficher la capture en base64
-        if os.getenv('GITHUB_ACTIONS'):
-            with open(filename, "rb") as img_file:
-                b64_string = base64.b64encode(img_file.read()).decode('utf-8')
-                print(f"\nCapture d'écran {name} (base64, premiers 500 caractères):")
-                print(b64_string[:500])
-    except Exception as e:
-        print(f"Erreur lors de la sauvegarde de la capture d'écran: {e}")
 
 def check_login_success(driver):
     """Vérifie si la connexion a réussi en vérifiant différents éléments sur la page"""
@@ -133,7 +114,6 @@ def get_auth_info():
                     # D'abord, accéder à la page d'accueil du service
                     driver.get('https://services-web.cyu.fr/calendar/')
                     time.sleep(2)
-                    save_screenshot(driver, "homepage")
                     
                     # Vérifier si nous sommes déjà connectés
                     if check_login_success(driver):
@@ -145,7 +125,6 @@ def get_auth_info():
                     print("Accès à la page de connexion...")
                     driver.get('https://services-web.cyu.fr/calendar/LdapLogin')
                     time.sleep(2)
-                    save_screenshot(driver, "login_page")
                     
                     # Attendre et vérifier que la page de login est bien chargée
                     try:
@@ -156,7 +135,6 @@ def get_auth_info():
                         print("Impossible de trouver le champ 'Name' sur la page de login")
                         print(f"URL actuelle: {driver.current_url}")
                         print(f"Titre: {driver.title}")
-                        save_screenshot(driver, "login_page_error")
                         raise Exception("Page de login non chargée correctement")
                     
                     # Remplir le formulaire
@@ -169,15 +147,12 @@ def get_auth_info():
                     username_field.send_keys(username)
                     password_field.send_keys(password)
                     
-                    save_screenshot(driver, "form_filled")
-                    
                     # Soumettre le formulaire
                     print("Soumission du formulaire...")
                     password_field.submit()
                     
                     # Attendre un peu pour permettre la redirection
                     time.sleep(5)
-                    save_screenshot(driver, "after_submit")
                     
                     # Attendre la redirection vers la page du calendrier
                     try:
@@ -187,7 +162,6 @@ def get_auth_info():
                         print(f"URL après redirection: {driver.current_url}")
                     except Exception as e:
                         print(f"Erreur lors de l'attente de redirection: {e}")
-                        save_screenshot(driver, "redirect_error")
                         raise
                     
                     # Vérifier explicitement si la connexion a réussi
@@ -197,12 +171,10 @@ def get_auth_info():
                         break
                     else:
                         print("La connexion semble avoir échoué malgré la redirection.")
-                        save_screenshot(driver, "login_failed")
                         raise Exception("Échec de connexion après redirection")
                     
                 except Exception as e:
                     print(f"ERREUR: Tentative de connexion {login_attempt + 1} échouée: {str(e)}")
-                    save_screenshot(driver, f"error_attempt_{login_attempt+1}")
                     
                     if login_attempt < 2:
                         print("Nouvelle tentative de connexion dans 5 secondes...")
@@ -222,7 +194,6 @@ def get_auth_info():
             # 2. Extraction du numéro étudiant
             current_url = driver.current_url
             print("URL après connexion:", current_url)
-            save_screenshot(driver, "after_login_success")
             
             print("Extraction du numéro étudiant...")
             student_match = re.search(r'fid0=(\d+)', current_url)
@@ -237,7 +208,6 @@ def get_auth_info():
                 try:
                     driver.get('https://services-web.cyu.fr/calendar/Home/ReadCalendar/')
                     time.sleep(3)
-                    save_screenshot(driver, "calendar_page")
                     
                     # Vérifier la nouvelle URL
                     current_url = driver.current_url
@@ -284,7 +254,6 @@ def get_auth_info():
                 print("Tentative de rafraîchissement de la page...")
                 driver.refresh()
                 time.sleep(5)
-                save_screenshot(driver, "page_refresh")
                 
                 cookies = driver.get_cookies()
                 print(f"Cookies après rafraîchissement: {len(cookies)}")
@@ -315,7 +284,6 @@ def get_auth_info():
             try:
                 print("URL actuelle:", driver.current_url)
                 print("Titre de la page:", driver.title)
-                save_screenshot(driver, "critical_error")
             except:
                 print("Impossible d'accéder aux informations de la page")
         return None, None
