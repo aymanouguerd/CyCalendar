@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 import uuid
 from icalendar import Calendar, Event
 import pytz
-import json
 import os
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry

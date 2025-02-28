@@ -1,8 +1,7 @@
 import os
-import requests
 import re
+import time
 from dotenv import load_dotenv
-from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -63,7 +62,6 @@ def get_auth_info():
         # Initialisation de l'affichage virtuel
         display = Display(visible=0, size=(1920, 1080))
         display.start()
-
         # Chargement des variables d'environnement
         load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
         username = os.getenv('CY_USERNAME')
@@ -71,14 +69,15 @@ def get_auth_info():
         
         if not username or not password:
             raise ValueError("Les identifiants CY_USERNAME et CY_PASSWORD doivent être définis")
-
         # Initialisation du driver Chrome
         driver = setup_chrome_driver()
         if not driver:
             raise Exception("Impossible d'initialiser le driver Chrome")
-
+        
         # Accès à la page de connexion avec retry
         max_retries = 3
+        connection_success = False
+        
         for attempt in range(max_retries):
             try:
                 print(f"Tentative de connexion {attempt + 1}/{max_retries}...")
@@ -100,18 +99,27 @@ def get_auth_info():
                 WebDriverWait(driver, 20).until(
                     EC.url_contains('/calendar')
                 )
+                connection_success = True
                 break
+                
             except Exception as e:
                 print(f"Tentative {attempt + 1} échouée: {str(e)}")
-                if attempt == max_retries - 1:
-                    raise
-                continue
-
+                if attempt < max_retries - 1:
+                    print(f"Nouvelle tentative dans 5 secondes...")
+                    time.sleep(5)  # Attendre 5 secondes avant de réessayer
+                else:
+                    print("Toutes les tentatives de connexion ont échoué.")
+                    raise Exception("Échec de connexion après plusieurs tentatives")
+        
+        if not connection_success:
+            return None, None
+        
         # Extraire le student number
         current_url = driver.current_url
         print("Extraction du numéro étudiant...")
         student_match = re.search(r'fid0=(\d+)', current_url)
         if not student_match:
+            print("Impossible de trouver le numéro étudiant dans l'URL")
             return None, None
             
         student_number = student_match.group(1)
@@ -125,12 +133,17 @@ def get_auth_info():
             None
         )
         
+        if not calendar_cookie:
+            print("Cookie .Calendar.Cookies non trouvé")
+            return None, None
+            
         return calendar_cookie, student_number
             
     except Exception as e:
         print(f"Erreur détaillée lors de l'authentification: {str(e)}")
         if driver:
-            print("Page source:", driver.page_source)
+            print("URL actuelle:", driver.current_url)
+            print("Page source (premiers 500 caractères):", driver.page_source[:500])
         return None, None
         
     finally:

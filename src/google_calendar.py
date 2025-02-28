@@ -9,7 +9,6 @@ import os.path
 import pickle
 import glob
 import html
-import base64
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 CALENDAR_NAME = "Cours CY"
@@ -148,12 +147,19 @@ def get_event_color(summary):
 def import_to_google_calendar(ics_file_path, calendar_id=None):
     """
     Importe les événements d'un fichier ICS dans Google Calendar avec des opérations batch
+    
+    Args:
+        ics_file_path (str): Chemin vers le fichier ICS à importer
+        calendar_id (str, optional): ID du calendrier existant où importer les événements
+        
+    Returns:
+        bool: True si l'import a réussi, False sinon
     """
     try:
         # Authentification Google
         creds = get_google_credentials()
         if not creds:
-            return
+            return False
             
         service = build('calendar', 'v3', credentials=creds)
         
@@ -224,9 +230,11 @@ def import_to_google_calendar(ics_file_path, calendar_id=None):
             batch.execute()
             
         print(f"Import terminé avec succès! {events_count} événements importés dans l'agenda '{CALENDAR_NAME}'")
+        return True
         
     except Exception as e:
         print(f"Erreur lors de l'import: {str(e)}")
         print("\nSi vous voyez une erreur d'accès refusé:")
         print("Votre limite doit etre dépassée. Attendez quelques minutes et réessayez.")
         print("Si le problème persiste, contactez le développeur.")
+        return False
