@@ -2,8 +2,11 @@ name: Update Google Calendar
 
 on:
   schedule:
-    - cron: "0 18 * * *"  # Valeur initiale, sera mise à jour dynamiquement
-    - cron: "0 18 * * *"  # Valeur initiale, sera mise à jour dynamiquement
+    # Exécution à un horaire aléatoire entre 18h et 20h (heure française)
+    # Format: "minute heure * * *" (UTC timezone)
+    # Cette ligne est automatiquement mise à jour par update_schedule.py
+    # après chaque exécution réussie pour générer un nouvel horaire aléatoire
+    - cron: "50 12 * * * # Prochaine exécution à 19:29 (heure locale)"
   workflow_dispatch:  # Déclenchement manuel
 
 jobs:
