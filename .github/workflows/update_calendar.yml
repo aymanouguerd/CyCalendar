@@ -2,17 +2,22 @@ name: Update Google Calendar
 
 on:
   schedule:
-    - cron: "0 4,18 * * *"  # Exécution à 04:00 et 18:00 UTC
+    - cron: "0 18 * * *"  # Valeur initiale, sera mise à jour dynamiquement
   workflow_dispatch:  # Déclenchement manuel
 
 jobs:
   update-calendar:
     runs-on: ubuntu-latest
     timeout-minutes: 10  # Timeout de sécurité
+    permissions:
+      contents: write  # Donner la permission d'écrire dans le repository
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4  # Mise à jour vers v4
+        with:
+          token: ${{ secrets.WORKFLOW_PAT }}  # Utilisation du token pour checkout
+          fetch-depth: 0  # Important pour avoir tout l'historique Git
 
       - name: Set up Python
         uses: actions/setup-python@v5  # Mise à jour vers v5
@@ -71,3 +76,21 @@ jobs:
             *.log
             ./*.txt
           retention-days: 5
+
+      - name: Update next execution time
+        if: success()
+        run: |
+          echo "Mise à jour du planning d'exécution..."
+          python3 -u src/update_schedule.py
+
+      - name: Commit and push updated workflow
+        if: success()
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .github/workflows/update_calendar.yml
+          git commit -m "Update execution schedule to a random time" || echo "No changes to commit"
+          # Utilisation du token pour le push
+          git push https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:${GITHUB_REF}
+        env:
+          GITHUB_TOKEN: ${{ secrets.WORKFLOW_PAT }}
