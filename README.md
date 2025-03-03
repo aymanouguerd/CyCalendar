@@ -1,6 +1,6 @@
 # CyCalendar
 
-CyCalendar est un outil qui synchronise automatiquement ou manuellement votre emploi du temps CY Tech avec Google Calendar. Le choix de google calendar a été fait puisque ce service est connecté avec d'autres applications comme le calendrier d'apple ou encore notion. **CE PROGRAMME NE S'UTILISE QUE SUR UBUNTU** (Etants étudiant à cytech vous devez sûrement y avoir accès quand même...)
+CyCalendar est un outil qui synchronise automatiquement ou manuellement votre emploi du temps CY Tech avec Google Calendar. Le choix de google calendar a été fait puisque ce service est connecté avec d'autres applications comme le calendrier d'apple ou encore notion.
 
 ## Fonctionnalités
 
@@ -9,32 +9,46 @@ CyCalendar est un outil qui synchronise automatiquement ou manuellement votre em
 - Conversion au format ICS
 - Synchronisation avec Google Calendar
 - Coloration automatique : bleu pour les CM, rouge doux pour les TD (Possibilité de modifier les couleurs à voir plus bas)
+- Compatible avec Windows et Linux
 
 ## Installation et Utilisation
 
    Ce script peut être utilisé de 3 façons: Génération simple du .ics et import manuel par vos soins ou bien import automatique via l'api de google avec possibilité d'ajout des mises à jour automatiques via github actions.
 
-   Des erreurs sont susceptibles d'arriver et pourtant de ne pas gêner l'execution du programme. Vérifiez par vous même le fonctionnement ou non tu programme.
+   Des erreurs sont susceptibles d'arriver et pourtant de ne pas gêner l'execution du programme. Vérifiez par vous même le fonctionnement ou non du programme.
+
+### Prérequis
+
+- **Windows** : Python 3.8+ et Chrome ou Microsoft Edge
+- **Linux** : Python 3.8+ et Chrome/Chromium
 
 ### Utilisation manuelle
 
    Cette utilisation est de loin la plus simple. Voici ses étapes :
 
+#### Pour Linux :
+
 1. Installer les dépendances ubuntu et python en éxecutant la commande suivante : ``./setup.bash # à la racine du projet``
+
+#### Pour Windows :
+
+1. Installer les dépendances python en exécutant le script ``setup.bat`` (double-cliquez dessus ou exécutez-le en ligne de commande)
+
+#### Pour tous les systèmes :
+
 2. Créer un fichier nommé '.env' à la racine du projet contenant ces informations :
 
-```
+   ```
    CY_USERNAME=username # e-1erelettreprenom+nom
    CY_PASSWORD=password # votre mot de passe
-```
-
-3. Executez le script en lançant la commande : ``python3 cyCalendar.py ``
+   ```
+3. Executez le script en lançant la commande : ``python cyCalendar.py`` (ou ``python3 cyCalendar.py`` sous Linux)
 
    Quelques erreurs devraient survenir mais le principal réside dans la génération du .ics. Si à l'étape 2 vous obtenez un message de ce style :
 
-```
+   ```
    Fichier ICS créé avec succès: /home/cytech/Desktop/CyCalendar/generated/cy_calendar.ics (257 événements)
-```
+   ```
 
    Alors c'est gagné. Votre fichier .ics se trouve dans le dossier generated/ et vous n'avez plus qu'à aller sur google agenda, selectionner le + pour créer un nouvel agenda.
 
@@ -59,7 +73,7 @@ CyCalendar est un outil qui synchronise automatiquement ou manuellement votre em
 
    Pour cette methode plus d'étapes et de prérequis sont nécessaires. Alors accrochez vous bien, ça vaut quand même le coup.
 
-1. Réaliser les étapes 1 et 2 de la méthode précédente afin d'installer les dépendances et d'initialiser les variables d'environnement.
+1. Réaliser les étapes d'installation et de configuration du fichier .env correspondant à votre système d'exploitation (voir section "Utilisation manuelle")
 2. Se rendre sur https://console.cloud.google.com/?hl=fr et vous connecter avec l'adresse mail de votre choix. Une fois sur cette page vous allez cliquer sur Sélectionnez un projet puis Nouveau projet.
 
    ![1740677637714](image/README/1740677637714.png)
@@ -89,8 +103,23 @@ CyCalendar est un outil qui synchronise automatiquement ou manuellement votre em
    ![1740678395944](image/README/1740678395944.png)
 
    Il ne vous reste plus qu'à déplacer ce fichier .json tel quel dans le dossier google et c'est fini pour cette étape !
+3. Pour finir, executez le script en lançant la commande : ``python cyCalendar.py`` (ou ``python3 cyCalendar.py`` sous Linux). Cette fois ci à l'étape 3 une fenetre d'authentification google s'ouvrira, selectionnez la même adresse que celle utilisée précedemment, un message d'erreur devrait s'afficher. Il faudra alors retourner sur la console google et cliquer sur les 3 barres à gauche section API et services puis Ecran de consentement OAuth.
 
-3. Pour finir, executez le script en lançant la commande : ``python3 cyCalendar.py ``. Cette fois ci à l'étape 3 une fenetre d'authentification google s'ouvrira, selectionnez la même adresse que celle utilisée précedemment et voila !
+   ![1741010678635](image/README/1741010678635.jpg)
+
+   Ensuite dans la catégorie Audience allez dans utilisateurs tests puis cliquez sur add users
+
+   ![1741010792234](image/README/1741010792234.jpg)
+
+   Ajoutez votre adresse mail, enregistrez là puis retourner sur l'écran d'authentification google. Réessayez et cette fois vous devriez obtenir cette page :
+
+   ![1741010863475](image/README/1741010863475.jpg)
+
+   Cliquez sur continuer.
+
+   ![1741010883466](image/README/1741010883466.jpg)
+
+   Cliquez encore sur continuer, et voilà. Après un peu d'attente, le programme devrait avoir réussi à récupérer les données de votre calendrier et à les importer dans votre agenda.
 
    Cette méthode permet donc d'importer vos cours de la meme façon mais en ayant l'avantage de mettre vos cours en couleur. De plus c'est quand même plus pratique de n'avoir qu'à executer un script.
 
@@ -131,13 +160,12 @@ CyCalendar est un outil qui synchronise automatiquement ou manuellement votre em
 - GOOGLE_CREDENTIALS avec le contenu du fichier google/client_secret ... .json qu'on a généré tout à l'heure
 - WORKFLOW_PAT avec un token d'accès personnel GitHub (voir ci-dessous)
 
-   ![1740680238429](image/README/1740680238429.png)
+  ![1740680238429](image/README/1740680238429.png)
 
-   Il en reste deux mais pour ça il va falloir executer le petit script situé dans src/ en executant la commande : ``python3 src/token_converter.py``
-   Vous n'avez plus qu'à copier coller le resultat de votre terminal à une dernière variable qu'il faudra nommer
-
+  Il en reste deux mais pour ça il va falloir executer le petit script situé dans src/ en executant la commande : ``python3 src/token_converter.py``
+  Vous n'avez plus qu'à copier coller le resultat de votre terminal à une dernière variable qu'il faudra nommer
 - GOOGLE_TOKEN_PICKLE avec la valeur précédemment convertie
-  
+
 La dernière variable permet à GitHub Actions de pousser des modifications sur votre dépôt (nécessaire pour la mise à jour automatique de l'horaire 	d'exécution). Vous devez créer un token d'accès personnel (Personal Access Token) :
 
 1. Allez sur votre compte GitHub et cliquez sur votre avatar en haut à droite
@@ -169,7 +197,21 @@ TADAAA. C'est fini. Si vous voulez faire un test manuel vous pouvez retourner su
 - `generated/` : Stockage des fichiers ICS générés
 - `google/` : Stockage des fichiers d'authentification Google (credentials et token)
 - `image/` : Stockage des images utilisées dans le README
+- `setup.bash` : Script d'installation pour Linux
+- `setup.bat` : Script d'installation pour Windows
 - `src/` : Code source du projet
+
+## Résolution de problèmes courants
+
+### Windows
+
+- **Erreur de driver Chrome/Edge** : Assurez-vous d'avoir Chrome ou Microsoft Edge installé sur votre système
+- **ImportError: cannot import name 'Display'** : Cette erreur est normale sous Windows, ignorez-la
+
+### Linux
+
+- **Erreur de chromedriver** : Exécutez `sudo apt install chromium-chromedriver` si le script d'installation ne l'a pas fait correctement
+- **Affichage virtuel** : Si vous rencontrez des problèmes avec Xvfb, exécutez `sudo apt-get install -y xvfb`
 
 ## Suppléments
 

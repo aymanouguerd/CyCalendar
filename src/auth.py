@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import platform
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -8,18 +9,44 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from pyvirtualdisplay import Display
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
+from webdriver_manager.core.utils import ChromeType
+
+# Import Display uniquement sous Linux
+if platform.system() != "Windows":
+    from pyvirtualdisplay import Display
 
 def setup_chrome_driver():
-    """Configuration du driver Chrome pour GitHub Actions et environnement local"""
+    """Configuration du driver Chrome pour Windows, Linux et GitHub Actions"""
     chrome_options = Options()
     
-    # Configuration spécifique pour GitHub Actions et environnement local
-    if os.getenv('SELENIUM_HEADLESS'):
+    # Détection du système d'exploitation
+    os_system = platform.system()
+    print(f"Système d'exploitation détecté : {os_system}")
+    
+    # Configuration spécifique pour GitHub Actions et environnement headless
+    if os.getenv('SELENIUM_HEADLESS', 'true').lower() == 'true':
         print("Configuration du mode headless...")
         chrome_options.add_argument('--headless=new')
-        chrome_options.binary_location = "/usr/bin/chromium-browser"  # Chemin vers Chromium
+        
+        # Chemin spécifique pour Ubuntu/Linux en CI
+        if os_system == "Linux":
+            # Vérifier si le binaire existe avant de le spécifier
+            chrome_paths = [
+                "/usr/bin/chromium-browser",
+                "/usr/bin/chromium",
+                "/usr/bin/google-chrome",
+                "/usr/bin/chrome"
+            ]
+            
+            for path in chrome_paths:
+                if os.path.exists(path):
+                    chrome_options.binary_location = path
+                    print(f"Binaire Chrome trouvé: {path}")
+                    break
     
+    # Options communes à toutes les plateformes
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-gpu')
@@ -37,18 +64,81 @@ def setup_chrome_driver():
         chrome_options.add_argument(opt)
         
     print("Options Chrome configurées:", chrome_options.arguments)
-    print("Binaire Chrome:", chrome_options.binary_location)
     
     try:
-        service = Service("/usr/bin/chromedriver")  # Chemin explicite vers chromedriver
-        driver = webdriver.Chrome(service=service, options=chrome_options)
-        driver.set_page_load_timeout(30)
-        print("Driver Chrome initialisé avec succès")
-        return driver
+        driver = None
+        # Installation et configuration spécifique selon la plateforme
+        if os_system == "Windows":
+            print("Configuration pour Windows...")
+            
+            # Pour Chrome, utiliser une version spécifique du driver
+            try:
+                print("Tentative avec Chrome...")
+                service = Service(ChromeDriverManager(version="114.0.5735.90").install())
+                driver = webdriver.Chrome(service=service, options=chrome_options)
+                print("Driver Chrome initialisé avec succès sur Windows")
+            except Exception as chrome_error:
+                print(f"Erreur Chrome sur Windows: {chrome_error}")
+                
+                # Pour Edge, ajouter des options spécifiques pour Edge
+                print("Tentative d'utilisation de Microsoft Edge...")
+                try:
+                    edge_options = webdriver.EdgeOptions()
+                    # Copier les arguments de chrome_options vers edge_options
+                    for arg in chrome_options.arguments:
+                        edge_options.add_argument(arg)
+                    
+                    service = Service(EdgeChromiumDriverManager().install())
+                    driver = webdriver.Edge(service=service, options=edge_options)
+                    print("Driver Edge initialisé avec succès sur Windows")
+                except Exception as edge_error:
+                    print(f"Erreur Edge sur Windows: {edge_error}")
+                    raise Exception("Tous les navigateurs ont échoué")
+        else:
+            # Configuration pour Linux/Mac
+            if os.getenv('SELENIUM_HEADLESS', 'true').lower() == 'true':
+                try:
+                    # Vérifier les chemins possibles pour chromedriver
+                    chromedriver_paths = [
+                        "/usr/bin/chromedriver",
+                        "/usr/local/bin/chromedriver"
+                    ]
+                    
+                    driver_path = None
+                    for path in chromedriver_paths:
+                        if os.path.exists(path):
+                            driver_path = path
+                            print(f"Chromedriver trouvé: {path}")
+                            break
+                    
+                    # Si un chemin a été trouvé, l'utiliser
+                    if driver_path:
+                        service = Service(driver_path)
+                    else:
+                        # Sinon, laisser webdriver_manager le télécharger
+                        service = Service(ChromeDriverManager().install())
+                except Exception as e:
+                    print(f"Erreur lors de la recherche de chromedriver: {e}")
+                    # Dernier recours: télécharger automatiquement
+                    service = Service(ChromeDriverManager().install())
+            else:
+                # Environnement local Linux/Mac avec téléchargement auto
+                service = Service(ChromeDriverManager().install())
+            
+            driver = webdriver.Chrome(service=service, options=chrome_options)
+            print("Driver Chrome initialisé avec succès sur Linux/Mac")
+        
+        if driver:
+            driver.set_page_load_timeout(30)
+            return driver
+        else:
+            raise Exception("Aucun driver n'a pu être initialisé")
+    
     except Exception as e:
-        print(f"Erreur lors de l'initialisation du driver Chrome: {str(e)}")
+        print(f"Erreur lors de l'initialisation du driver: {str(e)}")
         return None
 
+# Le reste du code reste inchangé
 def check_login_success(driver):
     """Vérifie si la connexion a réussi en vérifiant différents éléments sur la page"""
     try:
@@ -82,9 +172,12 @@ def get_auth_info():
     display = None
     
     try:
-        # Initialisation de l'affichage virtuel
-        display = Display(visible=0, size=(1920, 1080))
-        display.start()
+        # Initialisation de l'affichage virtuel uniquement sous Linux
+        if platform.system() != "Windows" and os.getenv('SELENIUM_HEADLESS', 'true').lower() == 'true':
+            print("Initialisation de l'affichage virtuel (Linux/Mac)...")
+            display = Display(visible=0, size=(1920, 1080))
+            display.start()
+        
         # Chargement des variables d'environnement
         load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
         username = os.getenv('CY_USERNAME')
@@ -100,6 +193,7 @@ def get_auth_info():
             print("ERREUR: Impossible d'initialiser le driver Chrome")
             return None, None
         
+        # Le reste du code reste inchangé
         # Processus global avec maximum de tentatives
         global_max_attempts = 3
         for global_attempt in range(global_max_attempts):
@@ -323,4 +417,4 @@ if __name__ == "__main__":
         print(f"Cookie et numéro étudiant ({student_id}) récupérés avec succès.")
     else:
         print("Échec de l'authentification.")
-        exit(1)
+        exit(1) 
