@@ -17,20 +17,26 @@ CyCalendar est un outil qui synchronise automatiquement ou manuellement votre em
    Des erreurs sont susceptibles d'arriver et pourtant de ne pas gêner l'execution du programme. Vérifiez par vous même le fonctionnement ou non tu programme.
 
 ### Utilisation manuelle
+
    Cette utilisation est de loin la plus simple. Voici ses étapes :
-   1. Installer les dépendances ubuntu et python en éxecutant la commande suivante : ``` ./setup.bash # à la racine du projet ```
-   2. Créer un fichier nommé '.env' à la racine du projet contenant ces informations : 
-   ``` 
+
+1. Installer les dépendances ubuntu et python en éxecutant la commande suivante : ``./setup.bash # à la racine du projet``
+2. Créer un fichier nommé '.env' à la racine du projet contenant ces informations :
+
+```
    CY_USERNAME=username # e-1erelettreprenom+nom
    CY_PASSWORD=password # votre mot de passe
-   ``` 
-   3. Executez le script en lançant la commande : ``` python3 cyCalendar.py  ```
-   
-   Quelques erreurs devraient survenir mais le principal réside dans la génération du .ics. Si à l'étape 2 vous obtenez un message de ce style : 
-   ```  
+```
+
+3. Executez le script en lançant la commande : ``python3 cyCalendar.py ``
+
+   Quelques erreurs devraient survenir mais le principal réside dans la génération du .ics. Si à l'étape 2 vous obtenez un message de ce style :
+
+```
    Fichier ICS créé avec succès: /home/cytech/Desktop/CyCalendar/generated/cy_calendar.ics (257 événements)
-   ```
-   Alors c'est gagné. Votre fichier .ics se trouve dans le dossier generated/ et vous n'avez plus qu'à aller sur google agenda, selectionner le + pour créer un nouvel agenda. 
+```
+
+   Alors c'est gagné. Votre fichier .ics se trouve dans le dossier generated/ et vous n'avez plus qu'à aller sur google agenda, selectionner le + pour créer un nouvel agenda.
 
    ![1740676845670](image/README/1740676845670.png)
 
@@ -43,7 +49,7 @@ CyCalendar est un outil qui synchronise automatiquement ou manuellement votre em
 
    ![1740677028729](image/README/1740677028729.png)
 
-   Une fois le chargement fini vous remarquez qu'en revenant en arrière vous avez bien votre nouvel agenda avec vos cours. 
+   Une fois le chargement fini vous remarquez qu'en revenant en arrière vous avez bien votre nouvel agenda avec vos cours.
 
    **CETTE METHODE N'ACTUALISE RIEN.** Ce qui signifie qu'il faudra recommencer à chaque fois que vous voudrez récupérer votre emploi du temps pour cette année. Embettant n'est ce pas ? C'est pourquoi la 2e méthode est bien plus efficace.
 
@@ -53,12 +59,12 @@ CyCalendar est un outil qui synchronise automatiquement ou manuellement votre em
 
    Pour cette methode plus d'étapes et de prérequis sont nécessaires. Alors accrochez vous bien, ça vaut quand même le coup.
 
-   1. Réaliser les étapes 1 et 2 de la méthode précédente afin d'installer les dépendances et d'initialiser les variables d'environnement.
-   2. Se rendre sur https://console.cloud.google.com/?hl=fr et vous connecter avec l'adresse mail de votre choix. Une fois sur cette page vous allez cliquer sur Sélectionnez un projet puis Nouveau projet.
-   
+1. Réaliser les étapes 1 et 2 de la méthode précédente afin d'installer les dépendances et d'initialiser les variables d'environnement.
+2. Se rendre sur https://console.cloud.google.com/?hl=fr et vous connecter avec l'adresse mail de votre choix. Une fois sur cette page vous allez cliquer sur Sélectionnez un projet puis Nouveau projet.
+
    ![1740677637714](image/README/1740677637714.png)
 
-   Renommez le ou laissez tout tel quel qu'importe, puis cliquez sur créer. Patientez le temps que la création se finisse puis ouvrez le en cliquant sur le popup à droite. 
+   Renommez le ou laissez tout tel quel qu'importe, puis cliquez sur créer. Patientez le temps que la création se finisse puis ouvrez le en cliquant sur le popup à droite.
    Une fois sur le tableau de bord, recherchez 'google calendar api' dans la barre de recherche et cliquez sur le 1er résultat.
 
    ![1740677953831](image/README/1740677953831.png)
@@ -68,7 +74,7 @@ CyCalendar est un outil qui synchronise automatiquement ou manuellement votre em
 
    ![1740678028056](image/README/1740678028056.png)
 
-   Choisissez ID client OAuth. Cliquez sur Configurer l'écran de consentement, premiers pas puis mettez le nom et l'adresse que vous souhaitez. 
+   Choisissez ID client OAuth. Cliquez sur Configurer l'écran de consentement, premiers pas puis mettez le nom et l'adresse que vous souhaitez.
 
    ![1740678117770](image/README/1740678117770.png)
 
@@ -84,21 +90,22 @@ CyCalendar est un outil qui synchronise automatiquement ou manuellement votre em
 
    Il ne vous reste plus qu'à déplacer ce fichier .json tel quel dans le dossier google et c'est fini pour cette étape !
 
-   3.  Pour finir, executez le script en lançant la commande : ``` python3 cyCalendar.py  ```. Cette fois ci à l'étape 3 une fenetre d'authentification google s'ouvrira, selectionnez la même adresse que celle utilisée précedemment et voila !
-   
+3. Pour finir, executez le script en lançant la commande : ``python3 cyCalendar.py ``. Cette fois ci à l'étape 3 une fenetre d'authentification google s'ouvrira, selectionnez la même adresse que celle utilisée précedemment et voila !
+
    Cette méthode permet donc d'importer vos cours de la meme façon mais en ayant l'avantage de mettre vos cours en couleur. De plus c'est quand même plus pratique de n'avoir qu'à executer un script.
 
    ![1740678785299](image/README/1740678785299.png)
 
 ### Configuration automatique et périodique
+
    Cette méthode utilise github actions pour créer une execution périodique du script sur un serveur ubuntu que l'on créera dans les serveurs de github.
    (Github actions est gratuit pour les repos publics et nécessite github pro pour les repos privés)
    Voici les étapes :
 
-   1. Etapes 1 et 2 de la méthode 1
-   2. Etapes 1 et 2 de la méthode 2
-   3. Il va falloir maintenant fork mon repository car pour créer une github action il vous faut votre propre repo. Pour ce faire allez sur github, connectez vous, rendez vous dans mon repo https://github.com/NayJi7/CyCalendar puis faites un fork.
-   
+1. Etapes 1 et 2 de la méthode 1
+2. Etapes 1 et 2 de la méthode 2
+3. Il va falloir maintenant fork mon repository car pour créer une github action il vous faut votre propre repo. Pour ce faire allez sur github, connectez vous, rendez vous dans mon repo https://github.com/NayJi7/CyCalendar puis faites un fork.
+
    ![1740679234099](image/README/1740679234099.png)
 
    Changez le nom ou pas faites ce que vous voulez puis validez. Ensuite cliquez sur Actions dans le menu du haut puis un message apparaitra. Cliquez sur le gros bouton vert lol.
@@ -119,18 +126,38 @@ CyCalendar est un outil qui synchronise automatiquement ou manuellement votre em
 
    Il va falloir enregistrer 4 variables :
 
-   - CY_USERNAME avec la valeur de votre username cy 
-   - CY_PASSWORD avec votre mot de passe associé à cet username
-   - GOOGLE_CREDENTIALS avec le contenu du fichier google/client_secret ... .json qu'on a généré tout à l'heure
-   
-   ![1740680238429](image/README/1740680238429.png)
-   
-   Il en reste une mais pour ça il va falloir executer le petit script situé dans src/ en executant la commande : ``` python3 src/token_converter.py ```
-   Vous n'avez plus qu'à copier coller le resultat de votre terminal à une dernière variable qu'il faudra nommer 
+- CY_USERNAME avec la valeur de votre username cy
+- CY_PASSWORD avec votre mot de passe associé à cet username
+- GOOGLE_CREDENTIALS avec le contenu du fichier google/client_secret ... .json qu'on a généré tout à l'heure
+- WORKFLOW_PAT avec un token d'accès personnel GitHub (voir ci-dessous)
 
-   - GOOGLE_TOKEN_PICKLE avec la valeur précédemment convertie
-    
-   TADAAA. C'est fini. Si vous voulez faire un test manuel vous pouvez retourner sur actions, update google calendar à gauche et cliquer sur run workflow.
+   ![1740680238429](image/README/1740680238429.png)
+
+   Il en reste deux mais pour ça il va falloir executer le petit script situé dans src/ en executant la commande : ``python3 src/token_converter.py``
+   Vous n'avez plus qu'à copier coller le resultat de votre terminal à une dernière variable qu'il faudra nommer
+
+- GOOGLE_TOKEN_PICKLE avec la valeur précédemment convertie
+  
+La dernière variable permet à GitHub Actions de pousser des modifications sur votre dépôt (nécessaire pour la mise à jour automatique de l'horaire 	d'exécution). Vous devez créer un token d'accès personnel (Personal Access Token) :
+
+1. Allez sur votre compte GitHub et cliquez sur votre avatar en haut à droite
+2. Sélectionnez **Settings**
+3. Descendez et cliquez sur **Developer settings** tout en bas à gauche
+4. Sélectionnez **Personal access tokens** puis **Tokens (classic)**
+5. Cliquez sur **Generate new token** puis **Generate new token (classic)**
+6. Donnez un nom à votre token (ex: "CyCalendar Workflow")
+7. Choisissez une durée d'expiration (No expiration ou un an)
+8. Dans repository access selectionnez All ou Only select repositories et choisissez votre repo CyCalendar
+9. Sélectionnez les permissions suivantes en read/write:
+   - `repo` : Actions, Contents, Workflows, Pull Requests,
+   - `Account permissions` : rien
+10. Cliquez sur **Generate token**
+11. **Important**: Copiez le token généré (vous ne pourrez plus le voir après avoir quitté cette page)
+12. Ajoutez ce token comme secret dans votre dépôt avec le nom `WORKFLOW_PAT`
+
+   Ce token permettra à l'action GitHub de mettre à jour automatiquement l'horaire d'exécution après chaque succès.
+
+TADAAA. C'est fini. Si vous voulez faire un test manuel vous pouvez retourner sur actions, update google calendar à gauche et cliquer sur run workflow.
 
    ![1740679392882](image/README/1740679392882.png)
 
@@ -149,17 +176,19 @@ CyCalendar est un outil qui synchronise automatiquement ou manuellement votre em
 Eh bien, quelle curiosité, t'as scrollé jusqu'ici quand même. Ici on arrive sur les parametrages un peu plus spéciaux (on va rentrer dans le code source).
 
 - Changement de l'intervalle de récupération des cours
-   Année, mois ou semaine
-   ``` 
-   calendar_converter.py -> ligne 26
-   def get_calendar_data(cookie, student_number,    range='year | month | week'):
-   ```
-   Récupère les cours de l'année (septembre à juillet), le mois (Du 1 au 31) ou la semaine (lundi à dimanche).
-   
+  Année, mois ou semaine
+
+  ```
+  calendar_converter.py -> ligne 26
+  def get_calendar_data(cookie, student_number,    range='year | month | week'):
+  ```
+
+  Récupère les cours de l'année (septembre à date actuelle + 2 mois *ou* janvier à date actuelle + 2 mois), le mois (Du 1 au 31) ou la semaine (lundi à dimanche).
 - Changement des couleurs
   Liste des couleurs dispo sous forme de dictionnaire python et de photos (src/google_colors.py et google/google_..._colors.png)
 
   Couleur de l'agenda Cours CY
+
   ```
    google_calendar.py -> ligne 102
 
@@ -167,6 +196,7 @@ Eh bien, quelle curiosité, t'as scrollé jusqu'ici quand même. Ici on arrive s
   ```
 
   Couleur des cours (evenements)
+
   ```
    google_calendar.py -> ligne 138
 
