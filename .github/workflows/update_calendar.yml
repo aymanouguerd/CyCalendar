@@ -3,6 +3,7 @@ name: Update Google Calendar
 on:
   schedule:
     - cron: "0 18 * * *"  # Valeur initiale, sera mise à jour dynamiquement
+    - cron: "0 18 * * *"  # Valeur initiale, sera mise à jour dynamiquement
   workflow_dispatch:  # Déclenchement manuel
 
 jobs:
