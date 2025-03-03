@@ -44,19 +44,17 @@ def update_github_workflow(time_str):
         # Format pour la syntaxe cron: "minute heure * * *" (* = tous les jours/mois/jours de la semaine)
         # Note: GitHub Actions utilise UTC comme timezone, donc cette heure sera interprétée comme UTC
         # Pour l'exécuter à 18h-20h heure française (UTC+1/UTC+2), il faudrait ajuster l'heure en conséquence
-        new_cron = f"{local_minute} {local_hour} * * * # Prochaine exécution à {time_str} (heure locale)" 
+        new_cron = f"{local_minute} {local_hour} * * *"
         
         # Recherche de la ligne contenant la définition du cron
         found = False
         for i, line in enumerate(lines):
             if "cron:" in line:
-                # Extraction de la valeur entre guillemets de la configuration cron actuelle
-                match = re.search(r'"([^"]*)"', line)
-                if match:
-                    # Remplacement de la valeur actuelle par notre nouvelle valeur
-                    lines[i] = line.replace(match.group(1), new_cron)
-                    found = True
-                    break
+                # Remplacement complet de la ligne, en préservant l'indentation
+                indent = re.match(r'^(\s*)', line).group(1)
+                lines[i] = f'{indent}- cron: "{new_cron}" # Prochaine exécution à {time_str} (heure locale)\n'
+                found = True
+                break
         
         # Si on a trouvé et modifié la ligne du cron
         if found:
