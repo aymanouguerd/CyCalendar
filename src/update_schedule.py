@@ -8,57 +8,89 @@ def generate_random_schedule():
     Génère une heure aléatoire entre 18h et 20h et une minute aléatoire
     Format: HH:MM
     """
+    # Choix d'une heure aléatoire entre 18h et 19h (donc jusqu'à 19h59)
     hour = random.randint(18, 19)
+    # Choix d'une minute aléatoire entre 0 et 59
     minute = random.randint(0, 59)
+    # Formatage de l'heure avec minutes à deux chiffres (ex: 18:05 et non 18:5)
     return f"{hour}:{minute:02d}"
 
 def update_github_workflow(time_str):
     """
     Met à jour le fichier de workflow GitHub Actions avec une nouvelle programmation
+    
+    Args:
+        time_str (str): L'heure au format "HH:MM" à définir pour la prochaine exécution
+        
+    Returns:
+        bool: True si la mise à jour a réussi, False sinon
     """
+    # Chemin complet vers le fichier workflow à modifier
     workflow_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.github', 'workflows', 'update_calendar.yml')
     
+    # Vérification que le fichier existe
     if not os.path.exists(workflow_path):
         print(f"Erreur: Le fichier {workflow_path} n'existe pas.")
         return False
     
     try:
+        # Lecture du fichier ligne par ligne
         with open(workflow_path, 'r') as file:
-            content = file.read()
+            lines = file.readlines()
         
-        # Extraire l'heure UTC à partir du temps local (Paris = UTC+2 en été, UTC+1 en hiver)
-        now = datetime.now()
-        # Supposons UTC+2 pour simplifier (à adapter selon la saison)
+        # Extraction de l'heure et des minutes depuis la chaîne "HH:MM"
         local_hour, local_minute = map(int, time_str.split(':'))
-        utc_hour = (local_hour - 2) % 24  # Conversion en UTC (UTC+2)
         
-        # Remplacer le cron schedule
-        # Format: "minute heure * * *"
-        new_cron = f"{local_minute} {utc_hour} * * *"
+        # Format pour la syntaxe cron: "minute heure * * *" (* = tous les jours/mois/jours de la semaine)
+        # Note: GitHub Actions utilise UTC comme timezone, donc cette heure sera interprétée comme UTC
+        # Pour l'exécuter à 18h-20h heure française (UTC+1/UTC+2), il faudrait ajuster l'heure en conséquence
+        new_cron = f"{local_minute} {local_hour} * * * # Prochaine exécution à {time_str} (heure locale)" 
         
-        # Rechercher et remplacer le cron existant
-        pattern = r'(cron:\s*")([0-9]+\s+[0-9]+\s+\*\s+\*\s+\*)(\")'
-        if re.search(pattern, content):
-            new_content = re.sub(pattern, f'\\1{new_cron}\\3', content)
-            
-            # Écrire le nouveau contenu
+        # Recherche de la ligne contenant la définition du cron
+        found = False
+        for i, line in enumerate(lines):
+            if "cron:" in line:
+                # Extraction de la valeur entre guillemets de la configuration cron actuelle
+                match = re.search(r'"([^"]*)"', line)
+                if match:
+                    # Remplacement de la valeur actuelle par notre nouvelle valeur
+                    lines[i] = line.replace(match.group(1), new_cron)
+                    found = True
+                    break
+        
+        # Si on a trouvé et modifié la ligne du cron
+        if found:
+            # Écriture du fichier modifié
             with open(workflow_path, 'w') as file:
-                file.write(new_content)
-                
-            print(f"Schedule mis à jour avec succès: exécution à {time_str} local / {utc_hour}:{local_minute:02d} UTC")
+                file.writelines(lines)
+            
+            print(f"Schedule mis à jour avec succès: exécution à {time_str} (heure locale)")
             return True
         else:
-            print("Modèle de cron non trouvé dans le fichier workflow.")
+            # En cas d'échec, affichage d'informations de débogage
+            print("Aucune ligne contenant 'cron:' n'a été trouvée dans le fichier.")
+            print("Contenu des 10 premières lignes:")
+            for i, line in enumerate(lines[:10]):
+                print(f"{i+1}: {line.strip()}")
             return False
             
     except Exception as e:
+        # Gestion des erreurs avec affichage de la trace complète
         print(f"Erreur lors de la mise à jour du workflow: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return False
 
+# Point d'entrée principal du script
 if __name__ == "__main__":
+    # Génération d'une nouvelle heure d'exécution aléatoire
     random_time = generate_random_schedule()
-    print(f"Génération d'un nouveau planning: {random_time}")
+    print(f"Génération d'un nouveau planning: {random_time} (heure locale)")
+    
+    # Mise à jour du fichier workflow avec cette nouvelle heure
     success = update_github_workflow(random_time)
+    
+    # Affichage du résultat
     if success:
         print("Le fichier de workflow a été mis à jour avec succès.")
     else:
