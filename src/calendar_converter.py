@@ -25,43 +25,58 @@ def create_session():
 def get_calendar_data(cookie, student_number, range='year'):
     """
     Récupère les données du calendrier de l'étudiant
+    
+    Args:
+        cookie: Cookie d'authentification
+        student_number: Numéro étudiant
+        range: Plage de dates ('year', 'month', 'week')
+        
+    Returns:
+        Liste des événements du calendrier
     """
-    # Paramètres pour l'année scolaire (de septembre à juillet)
-    current_year = datetime.now().year
-    current_month = datetime.now().month
+    # Paramètres pour la plage de dates
+    current_date = datetime.now()
+    current_year = current_date.year
+    current_month = current_date.month
     
     if range == 'year':
-        # Si on est entre janvier et juillet, on prend l'année scolaire actuelle
-        # Sinon on prend l'année scolaire suivante
-        if current_month >= 9:  # Si on est après septembre
-            start_year = current_year
-            end_year = current_year + 1
-        else:  # Si on est avant septembre
-            start_year = current_year - 1
-            end_year = current_year
-
-        # Du 1er septembre au 31 juillet
-        start_date = datetime(start_year, 9, 1).strftime('%Y-%m-%d')
-        end_date = datetime(end_year, 7, 31).strftime('%Y-%m-%d')
+        # Calculer la date de fin (2 mois après la date actuelle)
+        end_date = current_date + timedelta(days=60)
+        end_date_str = end_date.strftime('%Y-%m-%d')
+        
+        # Si on est entre janvier et août, on prend depuis janvier de l'année en cours
+        if current_month < 9:  # Avant septembre
+            start_date = datetime(current_year, 1, 1)
+            start_date_str = start_date.strftime('%Y-%m-%d')
+            print(f"Récupération du calendrier du {start_date_str} au {end_date_str}")
+        else:  # À partir de septembre, on prend depuis septembre de l'année en cours
+            start_date = datetime(current_year, 9, 1)
+            start_date_str = start_date.strftime('%Y-%m-%d')
+            print(f"Récupération du calendrier du {start_date_str} au {end_date_str}")
     elif range == 'month':
         # Du premier jour du mois actuel au dernier jour du mois actuel
-        start_date = datetime(current_year, current_month, 1).strftime('%Y-%m-%d')
-        end_date = (datetime(current_year, current_month, 1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-        end_date = end_date.strftime('%Y-%m-%d')
+        start_date = datetime(current_year, current_month, 1)
+        start_date_str = start_date.strftime('%Y-%m-%d')
+        end_date = (start_date + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        end_date_str = end_date.strftime('%Y-%m-%d')
+        print(f"Récupération du calendrier du mois: {start_date_str} au {end_date_str}")
     elif range == 'week':
         # Du lundi de la semaine actuelle au dimanche de la semaine actuelle
-        start_date = (datetime.now() - timedelta(days=datetime.now().weekday())).strftime('%Y-%m-%d')
-        end_date = (datetime.now() + timedelta(days=(6 - datetime.now().weekday()))).strftime('%Y-%m-%d')
+        start_date = current_date - timedelta(days=current_date.weekday())
+        start_date_str = start_date.strftime('%Y-%m-%d')
+        end_date = start_date + timedelta(days=6)
+        end_date_str = end_date.strftime('%Y-%m-%d')
+        print(f"Récupération du calendrier de la semaine: {start_date_str} au {end_date_str}")
     else:
         raise ValueError("Range must be 'year', 'month', or 'week'")
-
+    
     url = "https://services-web.cyu.fr/calendar/Home/GetCalendarData"
-
+    
     # Préparer les cookies pour la requête
     request_cookies = {cookie['name']: cookie['value']}
-
+    
     # Ajout du paramètre colourScheme dans le payload
-    payload = f'start={start_date}&end={end_date}&resType=104&calView=month&federationIds%5B%5D={student_number}&colourScheme=3'
+    payload = f'start={start_date_str}&end={end_date_str}&resType=104&calView=month&federationIds%5B%5D={student_number}&colourScheme=3'
     
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
@@ -69,9 +84,9 @@ def get_calendar_data(cookie, student_number, range='year'):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
         'X-Requested-With': 'XMLHttpRequest',
         'Origin': 'https://services-web.cyu.fr',
-        'Referer': f'https://services-web.cyu.fr/calendar/cal?vt=month&dt={datetime.now().strftime("%Y-%m-%d")}&et=student&fid0={student_number}',
+        'Referer': f'https://services-web.cyu.fr/calendar/cal?vt=month&dt={current_date.strftime("%Y-%m-%d")}&et=student&fid0={student_number}',
     }
-
+    
     session = create_session()
     try:
         response = session.post(
@@ -88,6 +103,7 @@ def get_calendar_data(cookie, student_number, range='year'):
             print("Aucun événement reçu!")
             return None
         
+        print(f"{len(events)} événements récupérés")
         return events
         
     except requests.exceptions.Timeout:
