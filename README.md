@@ -2,6 +2,8 @@
 
 CyCalendar est un outil qui synchronise automatiquement ou manuellement votre emploi du temps CY Tech avec Google Calendar. Le choix de google calendar a été fait puisque ce service est connecté avec d'autres applications comme le calendrier d'apple ou encore notion.
 
+Si jamais vous rencontrez une erreur vérifiez sur votre repository si le miens a une nouvelle mise à jour (vérifiez le contenu du push cela pourrait être une execution de update calendar). Si aucune mise à jour n'est disponible et que votre problème persiste n'hésitez pas à me contacter (contacts en pied de page).
+
 ## Fonctionnalités
 
 - Authentification automatique avec le système CY Tech
@@ -256,4 +258,4 @@ Eh bien, quelle curiosité, t'as scrollé jusqu'ici quand même. Ici on arrive s
 ## Auteur et informations
 
 - Projet créé par Adam Terrak pour les étudiants de CyTech - ([@NayJi7](https://github.com/NayJi7))
-- Contact: e.aterrak@gmail.com
+- Contact discord: [@nay.ji](https://discord.com/users/431329520197304320)

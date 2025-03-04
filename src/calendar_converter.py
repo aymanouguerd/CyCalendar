@@ -87,14 +87,16 @@ def get_calendar_data(cookie, student_number, range='year'):
         'Referer': f'https://services-web.cyu.fr/calendar/cal?vt=month&dt={current_date.strftime("%Y-%m-%d")}&et=student&fid0={student_number}',
     }
     
-    session = create_session()
+    events = None
     try:
+        session = create_session()
         response = session.post(
             url,
             headers=headers,
             data=payload,
             cookies=request_cookies,
-            timeout=(5, 15)  # (connect timeout, read timeout)
+            timeout=(5, 15),  # (connect timeout, read timeout)
+            verify=True  # Ensure SSL verification is enabled
         )
         response.raise_for_status()
         events = response.json()
@@ -113,7 +115,8 @@ def get_calendar_data(cookie, student_number, range='year'):
         print(f"Erreur lors de la récupération du calendrier: {e}")
         return None
     finally:
-        session.close()
+        if 'session' in locals():
+            session.close()
 
 def parse_description(description):
     """
