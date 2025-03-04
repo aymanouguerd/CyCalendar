@@ -34,8 +34,8 @@ def setup_chrome_driver():
         if os_system == "Linux":
             # Vérifier si le binaire existe avant de le spécifier
             chrome_paths = [
-                "/usr/bin/chromium-browser",
                 "/usr/bin/chromium",
+                "/usr/bin/chromium-browser",
                 "/usr/bin/google-chrome",
                 "/usr/bin/chrome"
             ]
@@ -70,21 +70,17 @@ def setup_chrome_driver():
         # Installation et configuration spécifique selon la plateforme
         if os_system == "Windows":
             print("Configuration pour Windows...")
-            
-            # Pour Chrome, utiliser une version spécifique du driver
             try:
                 print("Tentative avec Chrome...")
-                service = Service(ChromeDriverManager(version="114.0.5735.90").install())
+                service = Service(ChromeDriverManager().install())
                 driver = webdriver.Chrome(service=service, options=chrome_options)
                 print("Driver Chrome initialisé avec succès sur Windows")
             except Exception as chrome_error:
                 print(f"Erreur Chrome sur Windows: {chrome_error}")
                 
-                # Pour Edge, ajouter des options spécifiques pour Edge
                 print("Tentative d'utilisation de Microsoft Edge...")
                 try:
                     edge_options = webdriver.EdgeOptions()
-                    # Copier les arguments de chrome_options vers edge_options
                     for arg in chrome_options.arguments:
                         edge_options.add_argument(arg)
                     
@@ -96,37 +92,32 @@ def setup_chrome_driver():
                     raise Exception("Tous les navigateurs ont échoué")
         else:
             # Configuration pour Linux/Mac
-            if os.getenv('SELENIUM_HEADLESS', 'true').lower() == 'true':
-                try:
-                    # Vérifier les chemins possibles pour chromedriver
-                    chromedriver_paths = [
-                        "/usr/bin/chromedriver",
-                        "/usr/local/bin/chromedriver"
-                    ]
+            try:
+                # Vérifier les chemins possibles pour chromedriver
+                chromedriver_paths = [
+                    "/usr/bin/chromedriver",
+                    "/usr/local/bin/chromedriver"
+                ]
+                
+                driver_path = None
+                for path in chromedriver_paths:
+                    if os.path.exists(path):
+                        driver_path = path
+                        print(f"Chromedriver trouvé: {path}")
+                        break
+                
+                # Si un chemin a été trouvé, l'utiliser
+                if driver_path:
+                    service = Service(driver_path)
+                    driver = webdriver.Chrome(service=service, options=chrome_options)
+                    print("Driver Chrome initialisé avec succès sur Linux/Mac")
+                else:
+                    print("Aucun chromedriver trouvé dans les chemins standards")
+                    raise Exception("Chromedriver non trouvé")
                     
-                    driver_path = None
-                    for path in chromedriver_paths:
-                        if os.path.exists(path):
-                            driver_path = path
-                            print(f"Chromedriver trouvé: {path}")
-                            break
-                    
-                    # Si un chemin a été trouvé, l'utiliser
-                    if driver_path:
-                        service = Service(driver_path)
-                    else:
-                        # Sinon, laisser webdriver_manager le télécharger
-                        service = Service(ChromeDriverManager().install())
-                except Exception as e:
-                    print(f"Erreur lors de la recherche de chromedriver: {e}")
-                    # Dernier recours: télécharger automatiquement
-                    service = Service(ChromeDriverManager().install())
-            else:
-                # Environnement local Linux/Mac avec téléchargement auto
-                service = Service(ChromeDriverManager().install())
-            
-            driver = webdriver.Chrome(service=service, options=chrome_options)
-            print("Driver Chrome initialisé avec succès sur Linux/Mac")
+            except Exception as e:
+                print(f"Erreur lors de l'initialisation du driver: {e}")
+                return None
         
         if driver:
             driver.set_page_load_timeout(30)
@@ -417,4 +408,4 @@ if __name__ == "__main__":
         print(f"Cookie et numéro étudiant ({student_id}) récupérés avec succès.")
     else:
         print("Échec de l'authentification.")
-        exit(1) 
+        exit(1)
