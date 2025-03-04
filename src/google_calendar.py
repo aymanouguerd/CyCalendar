@@ -134,14 +134,14 @@ def get_event_color(summary):
     """
     summary = summary.upper()
     # Couleurs des événements
-    if any(term in summary.lower() for term in ['examen', 'rattrapages']):
-        return event_colors['Sage'] # Vert
+    if any(term in summary.lower() for term in ['examen', 'rattrapage', 'rattrapages', 'partiel']):
+        return event_colors['Sage']  # Vert pour les examens
     elif 'CM' in summary:
-        return event_colors['Peacock'] # Bleu
+        return event_colors['Peacock']  # Bleu pour les CM
     elif 'TD' in summary:
-        return event_colors['Tomato'] # Rouge
+        return event_colors['Tomato']  # Rouge pour les TD
     elif 'TP' in summary:
-        return event_colors['Tangerine'] # Orange
+        return event_colors['Tangerine']  # Orange pour les TP
     return event_colors['Graphite']  # Couleur par défaut
 
 def import_to_google_calendar(ics_file_path, calendar_id=None):
