@@ -24,19 +24,18 @@ jobs:
         with:
           python-version: "3.11"  # Version Python explicite plutôt qu'un secret
 
-      - name: Install system dependencies
+      - name: Install Chrome and ChromeDriver
         run: |
           sudo apt-get update
-          sudo apt-get install -y chromium-browser chromium-chromedriver xvfb
-          sudo chmod +x /usr/bin/chromedriver
-          which chromedriver
+          sudo apt-get install -y chromium-browser chromium-chromedriver
           chromium-browser --version
           chromedriver --version
 
-      - name: Start Xvfb
+      - name: Set up display
         run: |
+          sudo apt-get install -y xvfb
           Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
-          sleep 3  # Attente pour s'assurer que Xvfb est bien démarré
+          echo "DISPLAY=:99" >> $GITHUB_ENV
 
       - name: Install Python dependencies
         run: |
