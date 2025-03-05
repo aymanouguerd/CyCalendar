@@ -49,6 +49,15 @@ def update_github_workflow(time_str):
         found = False
         for i, line in enumerate(lines):
             if "cron:" in line:
+                # Recherche de l'ancienne heure d'execution
+                match = re.search(r'cron: "(\d+) (\d+) \* \* \*"', line)
+                if match:
+                    minute = int(match.group(1))
+                    hour = int(match.group(2))
+                    print(f"Ancien Schedule trouvé : {hour}:{minute}")
+                else:
+                    print(f"Ancien Schedule non trouvé")
+                
                 # Remplacement complet de la ligne, en préservant l'indentation
                 indent = re.match(r'^(\s*)', line).group(1)
                 lines[i] = f'{indent}- cron: "{new_cron}" # Prochaine exécution à {time_str} (heure locale)\n'
@@ -61,7 +70,7 @@ def update_github_workflow(time_str):
             with open(workflow_path, 'w') as file:
                 file.writelines(lines)
             
-            print(f"Schedule mis à jour avec succès: exécution à {time_str} (heure locale)")
+            print(f"Schedule mis à jour avec succès: {time_str}")
             return True
         else:
             # En cas d'échec, affichage d'informations de débogage
@@ -82,7 +91,6 @@ def update_github_workflow(time_str):
 if __name__ == "__main__":
     # Génération d'une nouvelle heure d'exécution aléatoire
     random_time = generate_random_schedule()
-    print(f"Génération d'un nouveau planning: {random_time} (heure locale)")
     
     # Mise à jour du fichier workflow avec cette nouvelle heure
     success = update_github_workflow(random_time)
