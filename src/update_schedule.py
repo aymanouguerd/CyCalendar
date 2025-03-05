@@ -1,7 +1,6 @@
 import os
 import random
 import re
-from datetime import datetime
 
 def generate_random_schedule():
     """
