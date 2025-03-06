@@ -284,26 +284,32 @@ Ce script va vous guider à travers les étapes d'installation.
             sys.exit(1)
 
     def select_repo(self):
-        # Liste des repos de l'utilisateur
-        try:
-            repos = subprocess.run(["gh", "repo", "list", "--limit", "100"], 
-                                   capture_output=True, 
-                                   text=True, 
-                                   check=True).stdout.strip().split('\n')
+        while(True):
+            try:
+                repos = subprocess.run(["gh", "repo", "list", "--limit", "100"], 
+                                    capture_output=True, 
+                                    text=True, 
+                                    check=True).stdout.strip().split('\n')
+                
+                print("\nVos dépôts GitHub :")
+                print(f"0. Je n'ai pas encore fork le repo CyCalendar et donc je ne le vois pas dans les options")
+                for i, repo in enumerate(repos, 1):
+                    print(f"{i}. {repo}")
+                
+                choice = input("Sélectionnez votre fork de CyCalendar (ou 0 si vous ne l'avez pas encore fork) : ")
+
+                if(choice == 0):
+                    subprocess.run(["gh", "repo", "fork", "NayJi7/CyCalendar", f"--clone-directory={Path.home}"], check=True)
+                    print("✅ Fork de CyCalendar effectué avec succès!")
+                    break
+                
+                # Sélectionner un repo existant
+                selected_repo = repos[int(choice) - 1].split()[0]
+                return selected_repo
             
-            print("\nVos dépôts GitHub :")
-            for i, repo in enumerate(repos, 1):
-                print(f"{i}. {repo}")
-            
-            choice = input("Sélectionnez votre dépôt CyCalendar (numéro): ")
-            
-            # Sélectionner un repo existant
-            selected_repo = repos[int(choice) - 1].split()[0]
-            return selected_repo
-        
-        except subprocess.CalledProcessError:
-            print("❌ Impossible de récupérer la liste des dépôts.")
-            sys.exit(1)
+            except subprocess.CalledProcessError:
+                print("❌ Impossible de récupérer la liste des dépôts.")
+                sys.exit(1)
 
     def setup_github_actions(self):
         if self.mode != 3:
