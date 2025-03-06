@@ -1,4 +1,5 @@
 @echo off
+echo.
 echo === Installation de CyCalendar pour Windows ===
 echo Démarrage de l'installation...
 

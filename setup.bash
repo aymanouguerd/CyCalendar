@@ -1,5 +1,6 @@
 #!/bin/bash
 
+echo ""
 echo "=== Installation de CyCalendar ==="
 echo "Démarrage de l'installation..."
 
@@ -20,10 +21,12 @@ echo "Création des répertoires..."
 mkdir -p google
 mkdir -p generated
 
-# Installation des dépendances Python
+# Installation des dépendances Python - sans environnement virtuel
 echo "Installation des dépendances Python..."
-python3 -m pip install --upgrade pip
-pip3 install -r requirements.txt
+# Installation avec le paramètre pour outrepasser la protection système
+python3 -m pip install --upgrade pip --break-system-packages
+# Installation des dépendances avec le paramètre pour outrepasser la protection système
+python3 -m pip install -r requirements.txt --break-system-packages
 
 # Configuration des permissions
 echo "Configuration des permissions..."

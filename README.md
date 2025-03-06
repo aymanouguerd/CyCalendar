@@ -33,7 +33,7 @@ Si vous comptez aller jusqu'à l'étape 3 (automatisation + mises à jours autom
 
 ### Installation automatique
 
-En suivant les étapes du setup.py que j'ai créé vous pouvez mettre en place l'installation de ce service de manière plus ou moins automatique. Certaines actions seront à faire par vos soins, j'ai automatisé ça du mieux que j'ai pu. (Le setup.py vous laisse choisir le mode désiré, vous pouvez faire une installation du mode manuel avec).
+En suivant les étapes du setup.py que j'ai créé vous pouvez mettre en place l'installation de ce service de manière plus ou moins automatique. Certaines actions seront à faire par vos soins, j'ai automatisé ça du mieux que j'ai pu. (Le setup.py vous laisse choisir le mode désiré, vous pouvez faire une installation du mode manuel avec). Les étapes du setup.py et de l'installation diffèrent sur certains points puisque j'automatise certain aspects (pas besoin de vous embêter avec les explications dans ce cas).			
 
 ### Installation manuelle
 
@@ -101,6 +101,17 @@ Cette catégorie n'est pas utile si vous avez choisi l'utilisation du setup.py p
    ![1740677953831](image/README/1740677953831.png)
 
    Cliquez sur Activer et patientez.
+
+   Cliquez ensuite sur Ecran de consentement OAuth dans le menu à gauche.
+
+   ![1741010678635](image/README/1741010678635.jpg)
+
+   Ensuite dans la catégorie Audience allez dans utilisateurs tests puis cliquez sur add users
+
+   ![1741010792234](image/README/1741010792234.jpg)
+
+   Ajoutez votre adresse mail, enregistrez là puis retourner sur l'écran d'authentification google.
+
    Après cela rendez vous dans le menu à gauche catégorie identifiants puis cliquez sur créer des identifiants.
 
    ![1740678028056](image/README/1740678028056.png)
@@ -120,15 +131,7 @@ Cette catégorie n'est pas utile si vous avez choisi l'utilisation du setup.py p
    ![1740678395944](image/README/1740678395944.png)
 
    Il ne vous reste plus qu'à déplacer ce fichier .json tel quel dans le dossier google et c'est fini pour cette étape !
-3. Pour finir, executez le script en lançant la commande : ``python cyCalendar.py`` (ou ``python3 cyCalendar.py`` sous Linux). Cette fois ci à l'étape 3 une fenetre d'authentification google s'ouvrira, selectionnez la même adresse que celle utilisée précedemment, un message d'erreur devrait s'afficher. Il faudra alors retourner sur la console google et cliquer sur les 3 barres à gauche section API et services puis Ecran de consentement OAuth.
-
-   ![1741010678635](image/README/1741010678635.jpg)
-
-   Ensuite dans la catégorie Audience allez dans utilisateurs tests puis cliquez sur add users
-
-   ![1741010792234](image/README/1741010792234.jpg)
-
-   Ajoutez votre adresse mail, enregistrez là puis retourner sur l'écran d'authentification google. Réessayez et cette fois vous devriez obtenir cette page :
+3. Pour finir, executez le script en lançant la commande : ``python cyCalendar.py`` (ou ``python3 cyCalendar.py`` sous Linux). Cette fois ci à l'étape 3 une fenetre d'authentification google s'ouvrira, selectionnez la même adresse que celle utilisée précedemment.
 
    ![1741010863475](image/README/1741010863475.jpg)
 
@@ -188,8 +191,8 @@ La dernière variable permet à GitHub Actions de pousser des modifications sur 
 1. Allez sur votre compte GitHub et cliquez sur votre avatar en haut à droite
 2. Sélectionnez **Settings**
 3. Descendez et cliquez sur **Developer settings** tout en bas à gauche
-4. Sélectionnez **Personal access tokens** puis **Tokens (classic)**
-5. Cliquez sur **Generate new token** puis **Generate new token (classic)**
+4. Sélectionnez **Personal access tokens** puis **Fine-grained tokens**
+5. Cliquez sur **Generate new token**
 6. Donnez un nom à votre token (ex: "CyCalendar Workflow")
 7. Choisissez une durée d'expiration (No expiration ou un an)
 8. Dans repository access selectionnez All ou Only select repositories et choisissez votre repo CyCalendar
