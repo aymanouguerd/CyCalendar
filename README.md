@@ -26,7 +26,7 @@ Si jamais vous rencontrez une erreur vérifiez sur votre repository si le miens 
 
 ### Généralités
 
-Si vous comptez aller jusqu'à l'étape 3 (automatisation + mises à jours automatiques), alors ne clonez pas le repo mais forkez le plutôt. Cela vous permettra d'avoir une copie de mon repo dans vos repo, vous en aurez besoin pour l'ajout du scheduler.
+**Si vous comptez aller jusqu'à l'étape 3 (automatisation + mises à jours automatiques), alors ne clonez pas le repo mais forkez le plutôt. Cela vous permettra d'avoir une copie de mon repo dans vos repo, vous en aurez besoin pour l'ajout du scheduler.**
 
 ![1741238356019](image/README/1741238356019.png)
 (Bouton fork juste au dessus du bouton code à droite)
