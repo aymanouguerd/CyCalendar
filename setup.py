@@ -4,7 +4,9 @@ import subprocess
 import getpass
 import base64
 import time
+import shutil
 import random
+import webbrowser
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -16,6 +18,14 @@ class CyCalendarInstaller:
         self.google_dir = self.project_root / 'google'
         self.credentials_path = None
         self.mode = None
+        
+    def write_log(self, step):
+        # Écriture du log
+        try:
+            with open(".setup.log", "w") as f:
+                f.write(str(step))
+        except Exception as e:
+            print(f"⚠️ Impossible d'écrire dans le fichier .setup.log: {e}")
 
     def display_welcome(self):
         print("""
@@ -47,8 +57,7 @@ Ce script va vous guider à travers les étapes d'installation.
             try:
                 subprocess.run(["bash", "setup.bash"], check=True)
                 print("✅ Dépendances Linux installées avec succès.")
-                with open(".setup.log", "w") as f:
-                    f.write("1")
+                self.write_log(1)
             except subprocess.CalledProcessError:
                 print("⚠️ Erreur lors de l'installation des dépendances Linux.")
                 print("Tentative d'installation manuelle des dépendances Python...")
@@ -59,8 +68,7 @@ Ce script va vous guider à travers les étapes d'installation.
             try:
                 subprocess.run(["setup.bat"], shell=True, check=True)
                 print("✅ Dépendances Windows installées avec succès.")
-                with open(".setup.log", "w") as f:
-                    f.write("1")
+                self.write_log(1)
             except subprocess.CalledProcessError:
                 print("⚠️ Erreur lors de l'installation des dépendances Windows.")
                 print("Tentative d'installation manuelle des dépendances Python...")
@@ -98,8 +106,7 @@ Ce script va vous guider à travers les étapes d'installation.
             env_file.write(f"CY_PASSWORD={cy_password}\n")
         
         print("✅ Fichier .env créé avec succès.")
-        with open(".setup.log", "w") as f:
-            f.write("2")
+        self.write_log(2)
 
     def setup_google_api(self):
         if self.mode == 1:
@@ -107,85 +114,107 @@ Ce script va vous guider à travers les étapes d'installation.
             return True
             
         print("\n[3/5] Configuration de l'API Google Calendar...")
-        print("""
-Automatisation de la configuration de l'API Google Calendar :
-1. Nous allons utiliser l'API Google Cloud pour simplifier le processus
-2. Vous devrez toujours générer le fichier de credentials manuellement
-(Le processus complet d'automatisation est complexe en raison des mesures de sécurité)
-""")
         
         # Vérifier si un fichier de credentials existe déjà
         credentials_files = list(self.google_dir.glob('client_secret_*.apps.googleusercontent.com.json'))
-        
+
         if credentials_files:
             print(f"Fichier de credentials trouvé : {credentials_files[0]}")
             choice = input("Voulez-vous utiliser ce fichier ? (y/n): ")
             if choice.lower() == 'y':
                 self.credentials_path = credentials_files[0]
+                self.write_log(3)
                 return True
         
-        # Guide pour obtenir les credentials
-        print("""
-Pour obtenir vos credentials Google :
-1. Allez sur https://console.cloud.google.com/
-2. Créez un nouveau projet
-""")
-        project_id = input("Collez l'ID du projet Google Cloud: ")
+        print("\nConfiguration automatique avec redirections...")
+        print("Plusieurs pages vont s'ouvrir, suivez les instructions sur le terminal afin de compléter la configuration google.")
+
+        print("\nOuverture de https://console.cloud.google.com/ ...")
+        print("Sur cette page il vous suffit de créer un projet avec le nom que vous voulez. (Connectez vous au compte google que vous souhaitez utiliser)")
+        time.sleep(2)        
+        webbrowser.open("https://console.cloud.google.com/")
         
-        print("Ouvrez un cloud shell en cliquant sur G puis S sur la page ou en cliquant sur l'icone de terminal en haut à droite.")
+        input("\nAppuyez sur Entrée une fois que le projet est créé et a fini de charger...")
 
-        unique_number = int(time.time() * 1000) + random.randint(1, 1000)
+        print("\nOuverture de https://console.cloud.google.com/marketplace/product/google/calendar-json.googleapis.com ...")
+        print("Sur cette page, cliquez sur le bouton 'Activer' pour activer l'API Google Calendar.")
+        time.sleep(2)
+        webbrowser.open("https://console.cloud.google.com/marketplace/product/google/calendar-json.googleapis.com")
 
-        print(f"""
-              
-    Collez les commandes suivantes dans le terminal google shell:
+        input("\nAppuyez sur Entrée une fois que l'API Google Calendar est activée et a fini de charger...")
 
-gcloud config set project {project_id}
+        print("\nOuverture de https://console.cloud.google.com/auth/overview ...")
+        print("Sur cette page, cliquez sur le bouton premiers pas puis complétez comme suit :")
+        print("-> Nom d'application : cycalendar et mettez votre adresse mail en adresse d'assistance")
+        print("-> Cible : externe")
+        print("-> Coordonées : votre adresse mail")
+        print("-> Acceptez puis créer")
+        time.sleep(2)
+        webbrowser.open("https://console.cloud.google.com/auth/overview")
 
-gcloud iam service-accounts create calendar-automation \
-    --display-name "Calendar Automation Account" || true
+        input("\nAppuyez sur Entrée une fois que la page Présentation d'OAuth a fini de charger...")
 
-gcloud projects add-iam-policy-binding {project_id} \
-    --member="serviceAccount:calendar-automation@{project_id}.iam.gserviceaccount.com" \
-    --role="roles/editor"
+        print("\nOuverture de https://console.cloud.google.com/auth/audience ...")
+        print("Sur cette page, sous utilisateurs tests cliquez sur ADD USERS, entrez votre adresse mail et cliquez sur Enregistrer.")
+        time.sleep(2)
+        webbrowser.open("https://console.cloud.google.com/auth/audience")
 
-gcloud iam service-accounts keys create "client_secret_{unique_number}.apps.googleusercontent.com.json" \
-    --iam-account=calendar-automation@{project_id}.iam.gserviceaccount.com
+        input("\nAppuyez sur Entrée une fois que vous avez ajouté votre adresse mail...")
 
-cat client_secret_1741252542.apps.googleusercontent.com.json
+        print("\nOuverture de https://console.cloud.google.com/auth/clients/create ...")
+        print("Sur cette page, choisissez application de bureau pour le type et mettez le nom que vous souhaitez puis cliquez sur créer")
+        time.sleep(2)
+        webbrowser.open("https://console.cloud.google.com/auth/clients/create")
 
-echo "✅ Fichier de credentials généré avec succès!"
-echo "Copiez le texte ci dessous et retournez à votre terminal pour continuer."
-echo ""
+        input("\nAppuyez sur Entrée une fois que le client OAuth 2.0 a été créé et a fini de charger...")
 
-cat client_secret_{unique_number}.apps.googleusercontent.com.json
-""")
+        print("\nIl ne vous reste plus qu'à cliquer sur l'icone de téléchargement tout à droite de votre clé créée, puis sur télécharger au format json.")       
         
-            
-        # Créer le dossier Google s'il n'existe pas
-        google_dir = Path.home() / '.google_credentials'
-        google_dir.mkdir(exist_ok=True)
+        input("\nAppuyez sur Entrée une fois que le fichier de credentials a été téléchargé...")
 
-        # Générer le chemin complet du fichier
-        credentials_filename = f"client_secret_{unique_number}.apps.googleusercontent.com.json"
-        credentials_path = google_dir / credentials_filename
+        # Try to find the credentials file in common Downloads locations
+        possible_paths = [
+            Path.home() / "Downloads",
+            Path("/Downloads"),
+            Path("/data/Downloads"),
+            Path.home() / "Téléchargements",
+            Path("/Téléchargements"),
+            Path("/data/Téléchargements")
+        ]
+        
+        credentials_files = []
+        for path in possible_paths:
+            if path.exists():
+                credentials_files.extend(list(path.glob('client_secret_*.apps.googleusercontent.com.json')))
 
-        # Sauvegarder le contenu JSON dans le fichier
-        try:
-            with open(credentials_path, 'w') as f:
-                f.write("")
-            
-        except Exception as e:
-            print(f"❌ Erreur lors de la création du fichier credentials : {e}")
-        
-        input(f"\nVeuillez coller le contenu du json généré sur google console dans {credentials_path} et appuyez sur Entrée pour continuer...")    
-        
-        # Écriture du log
-        try:
-            with open(".setup.log", "w") as f:
-                f.write("3")
-        except Exception as e:
-            print(f"⚠️ Impossible d'écrire dans le fichier .setup.log: {e}")
+        if credentials_files:
+            latest_file = max(credentials_files, key=lambda x: x.stat().st_mtime)
+            print(f"\nFichier de credentials trouvé dans vos téléchargements: {latest_file}")
+            choice = input("Est ce le bon ? (y/n): ")
+            if choice.lower() == 'y':
+                try:
+                    # Try to use project directory first
+                    self.google_dir.mkdir(exist_ok=True)
+                    shutil.copy2(latest_file, self.google_dir)
+                    self.credentials_path = self.google_dir / latest_file.name
+                except PermissionError:
+                    print(f"\n❌ Permission refusée pour copier le fichier de credentials de {latest_file} vers {self.google_dir}, veuillez le faire manuellement sans changer le nom ni le contenu.")
+                    input("\nAppuyez sur Entrée une fois que vous avez copié le fichier...")
+                    self.credentials_path = self.google_dir / latest_file
+
+        # If not found automatically or user declined, ask for manual path
+        if not self.credentials_path:
+            while True:
+                manual_path = Path(input("Entrez le chemin du fichier de credentials téléchargé: "))
+                if "client_secret_" in manual_path.name and ".apps.googleusercontent.com.json" in manual_path.name:
+                    self.google_dir.mkdir(exist_ok=True) 
+                    shutil.copy(manual_path, self.google_dir)
+                    self.credentials_path = self.google_dir / manual_path.name
+                    break
+                else:
+                    print("Fichier de credentials invalide. Veuillez réessayer.")
+                    
+        self.write_log(3)
         
         return True
 
@@ -232,17 +261,16 @@ cat client_secret_{unique_number}.apps.googleusercontent.com.json
                 print("✅ Déjà connecté à GitHub!")
                 return subprocess.run(["gh", "auth", "token"], capture_output=True, text=True).stdout.strip()
             
-            # Sinon, demander un nouveau token
-            print("""
-Pour vous connecter, vous devez créer un Personal Access Token :
-1. Allez sur GitHub → Settings → Developer settings
-2. Personal access tokens → Fine-grained tokens
-3. Générez un nouveau token avec les permissions:
-   - Repo: Actions, Contents, Workflows, Pull Requests
-   - Admin: Secrets
-""")
+            print("\nOuverture de la page de création de token...")
+            print("Créez le token en suivant ces instructions :")
+            print("- Nom : Votre choix")
+            print("- Expiration : Jamais ou selon vos préférences (l'app ne marchera plus après l'expiration)")
+            print("- Permissions : sous Repository cochez (en read/write) Actions, Contents, Pull Requests, Secrets et Workflows")
+            print("Puis cliquez sur Generate token et copiez le token généré.")
+            time.sleep(3)
+            webbrowser.open("https://github.com/settings/personal-access-tokens/new")
             
-            token = getpass.getpass("Collez votre Personal Access Token : ")
+            token = input("\nCollez votre Personal Access Token : ")
             
             # Connexion avec le token
             subprocess.run(["gh", "auth", "login", "--with-token"], 
@@ -309,9 +337,18 @@ Pour vous connecter, vous devez créer un Personal Access Token :
             with open(credentials_files[0], 'r') as f:
                 google_credentials = f.read()
 
-            # Lecture du token Google
-            with open(self.google_dir / "token.pickle", 'rb') as f:
-                google_token = base64.b64encode(f.read()).decode('utf-8')
+            google_token = None
+            while(google_token == None):
+                try:
+                    # Lecture du token Google
+                    with open(self.google_dir / "token.pickle", 'rb') as f:
+                        google_token = base64.b64encode(f.read()).decode('utf-8')
+                except FileNotFoundError:
+                    print("Fichier de token Google non généré.")
+                    print("Execution de cyCalendar.py pour générer le token...")
+                    print("Veuillez suivre les instructions affichées.")
+                    time.sleep(3)
+                    subprocess.run([sys.executable, "cyCalendar.py"], check=True)
 
             # Ajout des secrets
             print("\nConfiguration des secrets GitHub...")
@@ -365,8 +402,7 @@ Pour vous connecter, vous devez créer un Personal Access Token :
             print("\n✅ Configuration de GitHub Actions terminée!")
             
             # Écriture du log
-            with open(".setup.log", "w") as f:
-                f.write("4")
+            self.write_log(4)
 
         except subprocess.CalledProcessError as e:
             print(f"❌ Erreur lors de l'ajout des secrets: {e}")
@@ -383,8 +419,8 @@ Pour vous connecter, vous devez créer un Personal Access Token :
                 with open(".setup.log", "r") as f:
                     log = f.read()
                     log = int(log)
-                    choice = input("Une installation précédente a été détectée. Souhaitez-vous recommencer ? (y/n): ")
-                    if choice.lower() == 'y':
+                    choice = input("Une installation précédente a été détectée. Souhaitez-vous reprendre cette installation ? (y/n): ")
+                    if choice.lower() != 'y':
                         log = 0
             except FileNotFoundError:
                 log = 0
