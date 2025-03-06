@@ -46,7 +46,7 @@ jobs:
         run: |
           mkdir -p google
           echo '${{ secrets.GOOGLE_CREDENTIALS }}' > google/client_secret.json
-          echo '${{ secrets.GOOGLE_TOKEN_PICKLE }}' | base64 -d > google/token.pickle
+          echo '${{ secrets.GOOGLE_TOKEN }}' | base64 -d > google/token.pickle
 
       - name: Run script with debug
         env:

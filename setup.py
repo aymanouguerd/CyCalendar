@@ -392,8 +392,8 @@ Pour vous connecter, vous devez créer un Personal Access Token :
             
             self.display_welcome()
             self.select_installation_mode()
-            # if log < 1: self.install_dependencies()
-            # if log < 2: self.setup_environment()
+            if log < 1: self.install_dependencies()
+            if log < 2: self.setup_environment()
             
             if self.mode > 1 and log < 3:
                 success = self.setup_google_api()
