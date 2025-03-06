@@ -31,7 +31,7 @@ Ce script va vous guider à travers les étapes d'installation.
         print("\nVeuillez choisir un mode d'installation:")
         print("1. Mode Manuel (génération ICS simple)")
         print("2. Mode Automatique (synchronisation avec Google Calendar)")
-        print("3. Mode Automatique avec GitHub Actions (mises à jour périodiques)")
+        print("3. Mode Automatique et périodique (mises à jour périodiques avec GitHub Actions)")
         
         while True:
             choice = input("\nVotre choix (1/2/3): ")

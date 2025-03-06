@@ -24,19 +24,34 @@ Si jamais vous rencontrez une erreur vérifiez sur votre repository si le miens 
 - **Windows** : Python 3.8+ et Chrome ou Microsoft Edge
 - **Linux** : Python 3.8+ et Chrome/Chromium
 
-### Utilisation manuelle
+### Généralités
+
+Si vous comptez aller jusqu'à l'étape 3 (automatisation + mises à jours automatiques), alors ne clonez pas le repo mais forkez le plutôt. Cela vous permettra d'avoir une copie de mon repo dans vos repo, vous en aurez besoin pour l'ajout du scheduler.
+
+![1741238356019](image/README/1741238356019.png)
+(Bouton fork juste au dessus du bouton code à droite)
+
+### Installation automatique
+
+En suivant les étapes du setup.py que j'ai créé vous pouvez mettre en place l'installation de ce service de manière plus ou moins automatique. Certaines actions seront à faire par vos soins, j'ai automatisé ça du mieux que j'ai pu. (Le setup.py vous laisse choisir le mode désiré, vous pouvez faire une installation du mode manuel avec).
+
+### Installation manuelle
+
+Cette catégorie n'est pas utile si vous avez choisi l'utilisation du setup.py puisque celui ci vous guide déjà dans la configuration du service. Elle peut servir à vérifier que votre installation s'est faite correctement à la limite mais normalement vous n'en aurez pas besoin si vous êtes passés par le setup.py.
+
+#### 1. Mode manuel
 
    Cette utilisation est de loin la plus simple. Voici ses étapes :
 
-#### Pour Linux :
+##### Pour Linux :
 
 1. Installer les dépendances ubuntu et python en éxecutant la commande suivante : ``./setup.bash # à la racine du projet``
 
-#### Pour Windows :
+##### Pour Windows :
 
 1. Installer les dépendances python en exécutant le script ``setup.bat`` (double-cliquez dessus ou exécutez-le en ligne de commande)
 
-#### Pour tous les systèmes :
+##### Pour tous les systèmes :
 
 2. Créer un fichier nommé '.env' à la racine du projet contenant ces informations :
 
@@ -69,7 +84,7 @@ Si jamais vous rencontrez une erreur vérifiez sur votre repository si le miens 
 
    **CETTE METHODE N'ACTUALISE RIEN.** Ce qui signifie qu'il faudra recommencer à chaque fois que vous voudrez récupérer votre emploi du temps pour cette année. Embettant n'est ce pas ? C'est pourquoi la 2e méthode est bien plus efficace.
 
-### Configuration automatique (Sans Github Actions)
+#### 2. Mode automatique (Sans Github Actions)
 
    Passons maintenant à la méthode la plus intéressante mais également la plus complexe. Nous allons configurer le script pour importer automatiquement le .ics dans google agenda en passant via l'api.
 
@@ -127,7 +142,7 @@ Si jamais vous rencontrez une erreur vérifiez sur votre repository si le miens 
 
    ![1740678785299](image/README/1740678785299.png)
 
-### Configuration automatique et périodique
+#### 3. Mode automatique et périodique (mises à jour périodiques avec GitHub Actions)
 
    Cette méthode utilise github actions pour créer une execution périodique du script sur un serveur ubuntu que l'on créera dans les serveurs de github.
    (Github actions est gratuit pour les repos publics et nécessite github pro pour les repos privés)
