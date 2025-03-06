@@ -31,7 +31,7 @@ Si jamais vous rencontrez une erreur vérifiez sur votre repository si le miens 
 ![1741238356019](image/README/1741238356019.png)
 (Bouton fork juste au dessus du bouton code en vert à droite)
 
-### Installation automatique
+### Installation assistée
 
 En suivant les étapes du setup.py que j'ai créé vous pouvez mettre en place l'installation de ce service de manière plus ou moins automatique. Certaines actions seront à faire par vos soins, j'ai automatisé ça du mieux que j'ai pu. (Le setup.py vous laisse choisir le mode désiré, vous pouvez faire une installation du mode manuel avec). Les étapes du setup.py et de l'installation diffèrent sur certains points puisque j'automatise certain aspects (pas besoin de vous embêter avec les explications dans ce cas).			
 
