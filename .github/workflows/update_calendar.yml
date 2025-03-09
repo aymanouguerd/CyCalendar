@@ -2,7 +2,7 @@ name: Update Google Calendar
 
 on:
   schedule:
-    - cron: "2 19 * * *" # Prochaine exécution à 19:02 (heure locale)
+    - cron: "12 19 * * *" # Prochaine exécution à 19:12 (heure locale)
   workflow_dispatch:  # Déclenchement manuel
 
 jobs:
