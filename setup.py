@@ -361,6 +361,31 @@ Ce script va vous guider à travers les étapes d'installation.
                 choice = input("\nSélectionnez votre fork de CyCalendar (ou 0 pour en créer un nouveau) : ")
                 
                 if choice == "0":
+                    
+                    # Check if already authenticated
+                    try:
+                        subprocess.run(["gh", "auth", "status"], check=True, capture_output=True)
+                        print("✅ Déjà connecté à GitHub!")
+                    except subprocess.CalledProcessError:
+                        # Authentication needed
+                        print("Authentification GitHub requise...")
+                        # Check if we have a token in .env file
+                        try:
+                            with open('.env', 'r') as env_file:
+                                env_content = env_file.read()
+                                if 'WORKFLOW_PAT=' in env_content:
+                                    token = env_content.split('WORKFLOW_PAT=')[1].split('\n')[0]
+                                    subprocess.run(["gh", "auth", "login", "--with-token"], 
+                                                input=token.encode(), 
+                                                check=True)
+                                    print("✅ Authentifié avec le token existant!")
+                                else:
+                                    # We need to login interactively
+                                    subprocess.run(["gh", "auth", "login"], check=True)
+                        except FileNotFoundError:
+                            # No .env file, login interactively
+                            subprocess.run(["gh", "auth", "login"], check=True)
+                    
                     print("\nCréation d'un fork du dépôt CyCalendar...")
                     # Ne pas cloner le repo, juste le forker
                     fork_result = subprocess.run(
