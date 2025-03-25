@@ -388,45 +388,65 @@ Ce script va vous guider à travers les étapes d'installation.
                     
                     print("\nCréation d'un fork du dépôt CyCalendar...")
                     # Ne pas cloner le repo, juste le forker
-                    fork_result = subprocess.run(
-                        ["gh", "repo", "fork", "NayJi7/CyCalendar", "--clone=false"],
-                        capture_output=True,
-                        text=True,
-                        check=True
-                    )
-                    
-                    print("✅ Fork de CyCalendar effectué avec succès!")
-                    
-                    # Extraire le nom du fork à partir des résultats
-                    for line in fork_result.stdout.splitlines():
-                        if "Created fork" in line:
-                            parts = line.split()
-                            for part in parts:
-                                if "/" in part and "CyCalendar" in part:
-                                    return part.strip()
-                    
-                    # Si on ne peut pas extraire le nom automatiquement
-                    username_result = subprocess.run(
-                        ["gh", "api", "user", "-q", ".login"],
-                        capture_output=True,
-                        text=True,
-                        check=True
-                    )
-                    username = username_result.stdout.strip()
-                    
-                    if username:
-                        fork_name = f"{username}/CyCalendar"
-                        print(f"Fork créé sous: {fork_name}")
-                        # Activer les workflows pour le fork nouvellement créé
-                        print("\nActivation des workflows pour le nouveau fork...")
-                        try:
-                            # Ouvrir la page des actions pour activer manuellement
-                            print(f"Veuillez ouvrir: https://github.com/{fork_name}/actions et activer les workflows")
-                            webbrowser.open(f"https://github.com/{fork_name}/actions")
-                            input("Appuyez sur Entrée une fois que vous avez activé les workflows...")
-                        except Exception as e:
-                            print(f"⚠️ Erreur lors de l'activation des workflows: {e}")
-                        return fork_name
+                    try:
+                        fork_result = subprocess.run(
+                            ["gh", "repo", "fork", "NayJi7/CyCalendar", "--clone=false"],
+                            capture_output=True,
+                            text=True,
+                            check=False  # Ne pas lever d'exception automatiquement
+                        )
+                        
+                        if fork_result.returncode != 0:
+                            print(f"❌ Erreur lors du fork via CLI: {fork_result.stderr}")
+                            print("Ouverture du navigateur pour un fork manuel...")
+                            webbrowser.open("https://github.com/NayJi7/CyCalendar")
+                            
+                            # Demander à l'utilisateur de confirmer qu'il a forké le repo
+                            username = input("\nUne fois le fork créé, entrez votre nom d'utilisateur GitHub: ")
+                            print(f"✅ Fork manuel enregistré sous: {username}/CyCalendar")
+                            return f"{username}/CyCalendar"
+                        else:
+                            print("✅ Fork de CyCalendar effectué avec succès!")
+                            
+                            # Extraire le nom du fork à partir des résultats
+                            for line in fork_result.stdout.splitlines():
+                                if "Created fork" in line:
+                                    parts = line.split()
+                                    for part in parts:
+                                        if "/" in part and "CyCalendar" in part:
+                                            return part.strip()
+                            
+                            # Si on ne peut pas extraire le nom automatiquement
+                            username_result = subprocess.run(
+                                ["gh", "api", "user", "-q", ".login"],
+                                capture_output=True,
+                                text=True,
+                                check=True
+                            )
+                            username = username_result.stdout.strip()
+                            
+                            if username:
+                                fork_name = f"{username}/CyCalendar"
+                                print(f"Fork créé sous: {fork_name}")
+                                # Activer les workflows pour le fork nouvellement créé
+                                print("\nActivation des workflows pour le nouveau fork...")
+                                try:
+                                    # Ouvrir la page des actions pour activer manuellement
+                                    print(f"Veuillez ouvrir: https://github.com/{fork_name}/actions et activer les workflows")
+                                    webbrowser.open(f"https://github.com/{fork_name}/actions")
+                                    input("Appuyez sur Entrée une fois que vous avez activé les workflows...")
+                                except Exception as e:
+                                    print(f"⚠️ Erreur lors de l'activation des workflows: {e}")
+                                return fork_name
+                    except Exception as e:
+                        print(f"❌ Erreur inattendue lors du fork: {str(e)}")
+                        print("Ouverture du navigateur pour un fork manuel...")
+                        webbrowser.open("https://github.com/NayJi7/CyCalendar")
+                        
+                        # Demander à l'utilisateur de confirmer qu'il a forké le repo
+                        username = input("\nUne fois le fork créé, entrez votre nom d'utilisateur GitHub: ")
+                        print(f"✅ Fork manuel enregistré sous: {username}/CyCalendar")
+                        return f"{username}/CyCalendar"
                     
                     raise ValueError("Impossible de déterminer le nom du dépôt forké")
                 
