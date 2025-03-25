@@ -21,7 +21,7 @@ CyCalendar est un outil qui synchronise automatiquement votre emploi du temps CY
 - Un compte Google avec accès à l'API Google Calendar
 - Des identifiants OAuth2 Google (fichier `client_secret_*.json`)
 
-   Des erreurs sont susceptibles d'arriver et pourtant de ne pas gêner l'execution du programme. Vérifiez par vous même le fonctionnement ou non du programme.
+  Des erreurs sont susceptibles d'arriver et pourtant de ne pas gêner l'execution du programme. Vérifiez par vous même le fonctionnement ou non du programme.
 
 ### Prérequis
 
@@ -37,7 +37,7 @@ CyCalendar est un outil qui synchronise automatiquement votre emploi du temps CY
 
 ### Installation assistée
 
-En suivant les étapes du setup.py que j'ai créé vous pouvez mettre en place l'installation de ce service de manière plus ou moins automatique. Certaines actions seront à faire par vos soins, j'ai automatisé ça du mieux que j'ai pu. (Le setup.py vous laisse choisir le mode désiré, vous pouvez faire une installation du mode manuel avec). Les étapes du setup.py et de l'installation diffèrent sur certains points puisque j'automatise certain aspects (pas besoin de vous embêter avec les explications dans ce cas).			
+En suivant les étapes du setup.py que j'ai créé vous pouvez mettre en place l'installation de ce service de manière plus ou moins automatique. Certaines actions seront à faire par vos soins, j'ai automatisé ça du mieux que j'ai pu. (Le setup.py vous laisse choisir le mode désiré, vous pouvez faire une installation du mode manuel avec). Les étapes du setup.py et de l'installation diffèrent sur certains points puisque j'automatise certain aspects (pas besoin de vous embêter avec les explications dans ce cas).
 
 ### Installation manuelle
 
@@ -47,24 +47,20 @@ Cette catégorie n'est pas utile si vous avez choisi l'utilisation du setup.py p
 
    Cette utilisation est de loin la plus simple. Voici ses étapes :
 
-##### Pour Linux :
+##### Pour Linux et MacOs :
 
 1. Installer les dépendances ubuntu et python en éxecutant la commande suivante : ``./setup.bash # à la racine du projet``
-
-##### Pour Windows :
-
-1. Installer les dépendances python en exécutant le script ``setup.bat`` (double-cliquez dessus ou exécutez-le en ligne de commande)
 
 ##### Pour tous les systèmes :
 
 2. Créer un fichier nommé '.env' à la racine du projet contenant ces informations :
+3. Clonez ce dépôt
+4. Installez les dépendances :
 
-1. Clonez ce dépôt
-2. Installez les dépendances :
    ```bash
    pip install -r requirements.txt
    ```
-3. Placez votre fichier d'identifiants OAuth2 Google (`client_secret_*.json`) dans le dossier `google/`
+5. Placez votre fichier d'identifiants OAuth2 Google (`client_secret_*.json`) dans le dossier `google/`
 
 ## Utilisation
 
