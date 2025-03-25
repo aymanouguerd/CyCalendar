@@ -8,8 +8,6 @@ env/
 venv/
 ENV/
 .env
-*.base64
-*.log
 
 # Google Authentication
 google/*.json
